@@ -95,6 +95,13 @@
             <!-- Control Panel -->
             <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 flex flex-col">
                 <h2 class="text-2xl font-bold mb-6 text-emerald-400 border-b border-slate-700 pb-4">콘텐츠 조합하기 🧩</h2>
+                <div class="flex items-center justify-between mb-4">
+                    <label class="flex items-center gap-2 text-sm text-slate-300">
+                        <input id="simpleModeToggle" type="checkbox" class="w-4 h-4 text-emerald-500 bg-slate-700 border-slate-600 rounded focus:ring-emerald-500 focus:ring-2">
+                        간단 모드(추천)
+                    </label>
+                    <button id="randomizeBtn" class="text-sm bg-slate-700 text-slate-300 py-1 px-3 rounded hover:bg-slate-600 transition">🎰 한 번 쓱- 돌리기</button>
+                </div>
                 
                 <div class="space-y-6 flex-grow">
                     <!-- 1. Persona Selection -->
@@ -245,7 +252,20 @@
                         <button id="copyBtn" class="bg-slate-700 text-sm text-slate-300 py-1 px-3 rounded-md hover:bg-slate-600 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                             복사하기
                         </button>
+                        <button id="naverLoginBtn" class="bg-emerald-600 text-sm text-white py-1 px-3 rounded-md hover:bg-emerald-500 transition">
+                            네이버 로그인
+                        </button>
+                        <button id="naverPostBtn" class="bg-sky-600 text-sm text-white py-1 px-3 rounded-md hover:bg-sky-500 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            카페에 올리기
+                        </button>
+                        <button id="openPostedBtn" class="bg-slate-700 text-sm text-slate-300 py-1 px-3 rounded-md hover:bg-slate-600 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            글 열기(댓글)
+                        </button>
                     </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    <input id="cafeIdInput" type="text" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition text-sm" placeholder="카페 ID (clubid)">
+                    <input id="menuIdInput" type="text" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition text-sm" placeholder="메뉴 ID (board/menu)">
                 </div>
                 <div id="output" class="flex-grow bg-slate-900/50 p-4 rounded-lg text-slate-300 whitespace-pre-wrap overflow-y-auto leading-relaxed">
                     <div id="placeholder" class="h-full flex items-center justify-center text-slate-500">
@@ -265,6 +285,10 @@
                             <span id="resultPersonaName" class="font-semibold text-emerald-400"></span>
                         </div>
                         <div id="resultBody"></div>
+                        <div class="mt-4 flex gap-2">
+                            <button id="rewriteHookBtn" class="bg-slate-700 text-sm text-slate-300 py-1 px-3 rounded-md hover:bg-slate-600 transition">후킹 문장 바꾸기</button>
+                            <button id="rewriteLineBtn" class="bg-slate-700 text-sm text-slate-300 py-1 px-3 rounded-md hover:bg-slate-600 transition">한 줄 바꾸기</button>
+                        </div>
                     </div>
                 </div>
             </div>

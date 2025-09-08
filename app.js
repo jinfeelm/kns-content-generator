@@ -19,6 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const affiliationCheckbox = document.getElementById('includeAffiliation');
     const generateBtn = document.getElementById('generateBtn');
     const copyBtn = document.getElementById('copyBtn');
+    const naverLoginBtn = document.getElementById('naverLoginBtn');
+    const naverPostBtn = document.getElementById('naverPostBtn');
+    const openPostedBtn = document.getElementById('openPostedBtn');
     const outputPlaceholder = document.getElementById('placeholder');
     const outputLoading = document.getElementById('loading');
     const outputResult = document.getElementById('result');
@@ -26,6 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultPersonaIcon = document.getElementById('resultPersonaIcon');
     const resultPersonaName = document.getElementById('resultPersonaName');
     const resultBody = document.getElementById('resultBody');
+    const rewriteHookBtn = document.getElementById('rewriteHookBtn');
+    const rewriteLineBtn = document.getElementById('rewriteLineBtn');
+    const cafeIdInput = document.getElementById('cafeIdInput');
+    const menuIdInput = document.getElementById('menuIdInput');
     
     // New elements for improved functionality
     const postModeBtn = document.getElementById('postModeBtn');
@@ -36,6 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const userNameInput = document.getElementById('userName');
     const historyBtn = document.getElementById('historyBtn');
     const statsBtn = document.getElementById('statsBtn');
+    const simpleModeToggle = document.getElementById('simpleModeToggle');
+    const randomizeBtn = document.getElementById('randomizeBtn');
     const historyModal = document.getElementById('historyModal');
     const statsModal = document.getElementById('statsModal');
     const closeHistoryBtn = document.getElementById('closeHistoryBtn');
@@ -45,6 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // State management
     let currentMode = 'post'; // 'post' or 'comment'
     let contentHistory = JSON.parse(localStorage.getItem('knsContentHistory') || '[]');
+    let lastPostedUrl = null;
+    let simpleMode = false;
     
     const tones = [
         { id: 'anxious', name: '#불안한' }, { id: 'curious', name: '#궁금한' },
@@ -76,6 +87,30 @@ document.addEventListener('DOMContentLoaded', () => {
             "경험담 공유해주세요"
         ]
     };
+
+    // 백엔드 프롬프트에 주입할 스타일 템플릿(순환/랜덤 적용)
+    const styleTemplates = [
+        {
+            name: '문답형',
+            instruction: '소제목과 짧은 문답(Q/A) 형식으로 핵심만 간결히 정리하세요.'
+        },
+        {
+            name: '체크리스트형',
+            instruction: '핵심 포인트를 체크리스트(✔) 3~7개로 나열하고 각 항목에 한두 문장씩 보완하세요.'
+        },
+        {
+            name: '경험담 서사형',
+            instruction: '지난 1~2주의 구체적 사건을 서사처럼 기술하고, 마지막에 교훈/인사이트 2~3개로 정리하세요.'
+        },
+        {
+            name: '데이터 인용형',
+            instruction: '수치·비율·빈도 같은 수치 표현을 2개 이상 포함하고, 출처는 [학교/학원 내부 데이터]처럼 일반화해 표기하세요.'
+        },
+        {
+            name: '질문 유도형',
+            instruction: '문단마다 독자에게 1문장 질문을 던져 상호작용을 유도하세요.'
+        }
+    ];
 
     // 카테고리별 톤앤매너 매핑
     const categoryToneMapping = {
@@ -189,6 +224,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function applySimpleModeUI() {
+        const hideTargets = [
+            postTypeSection,
+            referencePostSection,
+            document.getElementById('postLength').parentElement,
+            document.getElementById('toneOptions').parentElement,
+            document.getElementById('keyword').parentElement
+        ];
+        hideTargets.forEach(el => {
+            if (!el) return;
+            if (simpleMode) el.classList.add('hidden'); else el.classList.remove('hidden');
+        });
+    }
+
     function switchMode(mode) {
         currentMode = mode;
         
@@ -205,6 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
             referencePostSection.classList.remove('hidden');
             generateBtn.textContent = '💬 댓글 생성하기';
         }
+        applySimpleModeUI();
     }
 
     function saveToHistory(content) {
@@ -437,17 +487,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const selectedPersona = personaSelect.value;
         const selectedScenario = scenarioSelect.value;
-        const selectedPostType = postTypeSelect.value;
+        let selectedPostType = postTypeSelect.value;
         const selectedCategory = categorySelect.value;
-        const selectedLength = postLengthSelect.value;
-        const selectedTones = Array.from(toneOptionsContainer.querySelectorAll('input:checked')).map(el => el.value);
-        const keyword = keywordInput.value.trim();
+        let selectedLength = postLengthSelect.value;
+        let selectedTones = Array.from(toneOptionsContainer.querySelectorAll('input:checked')).map(el => el.value);
+        let keyword = keywordInput.value.trim();
         const includeAffiliation = affiliationCheckbox.checked;
         const seoOptimize = document.getElementById('seoOptimize').checked;
         const realisticDetails = document.getElementById('realisticDetails').checked;
         const emotionalDepth = document.getElementById('emotionalDepth').checked;
 
         const personaInfo = personaDetails[selectedPersona];
+
+        if (simpleMode) {
+            const postTypes = ['SOS형', '공유형', 'Q&A형'];
+            selectedPostType = postTypes[Math.floor(Math.random() * postTypes.length)];
+            const lengths = ['자동', '짧게', '보통', '길게'];
+            selectedLength = lengths[Math.floor(Math.random() * lengths.length)];
+            const tonePool = tones.map(t => t.name);
+            const shuffled = [...tonePool].sort(() => Math.random() - 0.5);
+            selectedTones = shuffled.slice(0, Math.floor(Math.random() * 3));
+            keyword = '';
+        }
 
         // 랜덤 요소 선택
         const randomWritingStyle = randomElements.writingStyles[Math.floor(Math.random() * randomElements.writingStyles.length)];
@@ -480,6 +541,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         let userQuery = '';
+
+        // 스타일 템플릿을 한 개 선택
+        const chosenTemplate = styleTemplates[Math.floor(Math.random() * styleTemplates.length)];
         
         if (currentMode === 'post') {
             userQuery = `
@@ -490,6 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
             - **글 길이:** ${selectedLength}
             - **핵심 키워드 (선택):** ${keyword || '지정되지 않음'}
             - **감성/톤앤매너 (선택):** ${selectedTones.join(', ') || '지정되지 않음'}
+            - **스타일 템플릿:** ${chosenTemplate.name} — ${chosenTemplate.instruction}
             
             **카테고리별 톤앤매너 가이드:**
             - 권장 톤앤매너: ${defaultTones.join(', ') || '자연스러운 학부모 톤앤매너'}
@@ -523,6 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
             - **글 길이:** ${selectedLength}
             - **핵심 키워드 (선택):** ${keyword || '지정되지 않음'}
             - **감성/톤앤매너 (선택):** ${selectedTones.join(', ') || '지정되지 않음'}
+            - **스타일 템플릿:** ${chosenTemplate.name} — ${chosenTemplate.instruction}
             
             **카테고리별 톤앤매너 가이드:**
             - 권장 톤앤매너: ${defaultTones.join(', ') || '자연스러운 학부모 톤앤매너'}
@@ -543,12 +609,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
         const apiUrl = `/.netlify/functions/generate`;
+        const generationConfig = {
+            temperature: simpleMode ? 1.1 : 0.9,
+            topP: 0.95,
+            topK: 40,
+            candidateCount: 1
+        };
         const payload = {
             contents: [{ parts: [{ text: userQuery }] }],
             systemInstruction: {
                 parts: [{ text: systemPrompt }]
-        },
-    };    
+            },
+            generationConfig
+        };    
 
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -584,6 +657,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     bodyText = rawText;
                 }
                 
+                // 로컬 히스토리와의 간단 유사도 체크(3-그램 자카드)
+                const isTooSimilar = (text) => {
+                    const ngrams = (t) => {
+                        const words = t.replace(/\s+/g, ' ').trim().split(' ');
+                        const set = new Set();
+                        for (let i = 0; i < words.length - 2; i++) {
+                            set.add(`${words[i]} ${words[i+1]} ${words[i+2]}`);
+                        }
+                        return set;
+                    };
+                    const a = ngrams(text);
+                    for (const item of contentHistory) {
+                        const b = ngrams(item.body || '');
+                        let inter = 0;
+                        a.forEach(x => { if (b.has(x)) inter++; });
+                        const union = a.size + b.size - inter;
+                        const jaccard = union ? inter / union : 0;
+                        if (jaccard >= 0.75) return true;
+                    }
+                    return false;
+                };
+
+                if (isTooSimilar(bodyText)) {
+                    alert('이미 생성된 내용과 유사도가 높습니다. 옵션을 바꾸거나 다시 생성해보세요.');
+                }
+                // 서버 전역 dedupe 체크
+                try {
+                    const dupResp = await fetch('/.netlify/functions/nlp-dedupe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'check', text: bodyText, persona: selectedPersona, category: selectedCategory })
+                    });
+                    const dup = await dupResp.json().catch(() => ({}));
+                    if (dup.similar) {
+                        alert('팀 전역에서 유사한 콘텐츠가 이미 존재합니다. 한 번 더 돌려보세요.');
+                    }
+                } catch {}
+
                 displayResult(selectedPersona, titleText, bodyText);
                 
                 // 히스토리에 저장
@@ -633,9 +744,71 @@ document.addEventListener('DOMContentLoaded', () => {
         
         typeWriter(resultBody, body, () => {
             copyBtn.disabled = false;
+            naverPostBtn.disabled = false;
         });
         
         outputResult.classList.remove('hidden');
+    }
+    async function startNaverLogin() {
+        try {
+            const resp = await fetch('/.netlify/functions/naver-auth-url');
+            if (!resp.ok) throw new Error('네이버 인증 URL 생성 실패');
+            const { url } = await resp.json();
+            window.location.href = url;
+        } catch (e) {
+            alert(e.message);
+        }
+    }
+
+    async function postToNaverCafe() {
+        try {
+            const cafeId = (cafeIdInput.value || '').trim();
+            const menuId = (menuIdInput.value || '').trim();
+            const title = resultTitle.textContent;
+            const body = resultBody.textContent;
+            if (!cafeId || !menuId) {
+                alert('카페 ID와 메뉴 ID를 입력해주세요.');
+                return;
+            }
+            naverPostBtn.disabled = true;
+            naverPostBtn.textContent = '업로드 중...';
+            const resp = await fetch('/.netlify/functions/naver-cafe-post', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cafeId, menuId, title, content: body })
+            });
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok) {
+                throw new Error(data.error || '업로드 실패');
+            }
+            // 실제 응답에 따라 게시글 URL 추출 필요
+            lastPostedUrl = data.data?.result?.articleUrl || null;
+            if (lastPostedUrl) {
+                openPostedBtn.disabled = false;
+            }
+            // 팀 전역 커밋(중복 방지 히스토리에 기록)
+            try {
+                await fetch('/.netlify/functions/nlp-dedupe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'commit', text: body, persona: personaSelect.value, category: categorySelect.value })
+                });
+            } catch {}
+            alert('카페에 게시가 완료되었습니다.');
+        } catch (e) {
+            alert(e.message);
+        } finally {
+            naverPostBtn.disabled = false;
+            naverPostBtn.textContent = '카페에 올리기';
+        }
+    }
+
+    function openPostedArticle() {
+        if (!lastPostedUrl) {
+            alert('게시된 글 URL이 없습니다.');
+            return;
+        }
+        window.open(lastPostedUrl, '_blank');
     }
 
     function displayError(message) {
@@ -661,11 +834,41 @@ document.addEventListener('DOMContentLoaded', () => {
         
         personaSelect.addEventListener('change', updateScenarios);
         updateScenarios();
+
+        // 카테고리 선택 시 카페/메뉴 자동 입력
+        categorySelect.addEventListener('change', () => {
+            try {
+                const mapping = (window.CONFIG && window.CONFIG.CATEGORY_TO_CAFE_MENU) || {};
+                const selected = categorySelect.value;
+                const target = mapping[selected];
+                if (target && (target.cafeId || target.menuId)) {
+                    if (target.cafeId) cafeIdInput.value = target.cafeId;
+                    if (target.menuId) menuIdInput.value = target.menuId;
+                }
+            } catch { /* noop */ }
+        });
     }
 
     // Event listeners
     postModeBtn.addEventListener('click', () => switchMode('post'));
     commentModeBtn.addEventListener('click', () => switchMode('comment'));
+    if (simpleModeToggle) {
+        simpleModeToggle.addEventListener('change', (e) => {
+            simpleMode = !!e.target.checked;
+            applySimpleModeUI();
+        });
+    }
+    if (randomizeBtn) {
+        randomizeBtn.addEventListener('click', () => {
+            const pick = (sel) => sel.options[Math.floor(Math.random() * sel.options.length)].value;
+            personaSelect.value = pick(personaSelect);
+            updateScenarios();
+            scenarioSelect.value = pick(scenarioSelect);
+            categorySelect.value = pick(categorySelect);
+            switchMode('post');
+            generateContent();
+        });
+    }
     
     historyBtn.addEventListener('click', () => {
         loadHistory();
@@ -724,5 +927,61 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // 네이버 연동 버튼
+    naverLoginBtn.addEventListener('click', startNaverLogin);
+    naverPostBtn.addEventListener('click', postToNaverCafe);
+    openPostedBtn.addEventListener('click', openPostedArticle);
+
+    async function rewrite(type) {
+        try {
+            const persona = resultPersonaName.textContent;
+            const title = resultTitle.textContent;
+            const body = resultBody.textContent;
+            const prompt = type === 'hook'
+                ? `아래 글의 첫 문장(후킹 문장)만 더 강렬하고 자연스럽게 1문장으로 바꿔주세요. 같은 의미를 다른 표현으로:
+제목: ${title}
+본문: ${body}`
+                : `아래 글에서 무작위 한 문장을 선택해 같은 의미를 유지하되 표현을 바꿔 1문장으로 제시하세요. (원문 반환 X)
+제목: ${title}
+본문: ${body}`;
+
+            const apiUrl = '/.netlify/functions/generate';
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: `당신은 ${persona} 페르소나의 말투와 톤을 유지합니다. 결과는 순수 텍스트 1문장만 반환하세요.` }] },
+                generationConfig: { temperature: 0.9 }
+            };
+            const resp = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const data = await resp.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+            if (!text) throw new Error('리라이트 실패');
+
+            if (type === 'hook') {
+                const split = body.split('\n');
+                split[0] = text;
+                const newBody = split.join('\n');
+                resultBody.textContent = newBody;
+            } else {
+                // 단일 문장 치환: 가장 긴 문장을 교체
+                const sentences = body.split(/([.!?\n])/).reduce((acc, cur, idx, arr) => {
+                    if (!acc.length) acc.push(cur);
+                    else if (/[.!?\n]/.test(arr[idx - 1])) acc.push(cur);
+                    else acc[acc.length - 1] += cur;
+                    return acc;
+                }, []).filter(s => s.trim());
+                let maxIdx = 0;
+                for (let i = 1; i < sentences.length; i++) if (sentences[i].length > sentences[maxIdx].length) maxIdx = i;
+                sentences[maxIdx] = text;
+                resultBody.textContent = sentences.join(' ').replace(/\s+/g, ' ');
+            }
+        } catch (e) {
+            alert(e.message || '리라이트 중 오류');
+        }
+    }
+
+    if (rewriteHookBtn) rewriteHookBtn.addEventListener('click', () => rewrite('hook'));
+    if (rewriteLineBtn) rewriteLineBtn.addEventListener('click', () => rewrite('line'));
+
     init();
 });
+

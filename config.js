@@ -2,7 +2,16 @@
 // 서버리스 함수로 호출하므로 API 키는 여기에 두지 않습니다.
 
 window.CONFIG = window.CONFIG || {
-	MAX_HISTORY_ITEMS: 100
+	MAX_HISTORY_ITEMS: 100,
+	CATEGORY_TO_CAFE_MENU: {
+		// 예시 매핑: 실제 값으로 교체하세요
+		"KNS 자체 콘텐츠": { cafeId: "", menuId: "" },
+		"학습법/공부 습관": { cafeId: "", menuId: "" },
+		"학교 정보/입시 전략": { cafeId: "", menuId: "" },
+		"자녀 관계/멘탈 관리": { cafeId: "", menuId: "" },
+		"학원 생활/시스템 문의": { cafeId: "", menuId: "" },
+		"일상/유머": { cafeId: "", menuId: "" }
+	}
 };
 
 // 클라이언트에서는 API 키를 검증하지 않습니다.

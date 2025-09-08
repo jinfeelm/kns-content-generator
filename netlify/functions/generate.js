@@ -1,7 +1,7 @@
 exports.handler = async function(event, context) {
   const requestBody = JSON.parse(event.body);
   const apiKey = process.env.GEMINI_API_KEY;
-  const modelName = "gemini-2.5-pro"; 
+  const modelName = "gemini-2.5-flash";
 
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
