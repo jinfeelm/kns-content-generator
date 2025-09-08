@@ -1,0 +1,41 @@
+# API 키가 포함된 설정 파일 (보안상 중요!)
+config.js
+
+# 로컬 개발 환경 파일
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE 설정 파일
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 운영체제 생성 파일
+.DS_Store
+Thumbs.db
+
+# 로그 파일
+*.log
+logs/
+
+# 임시 파일
+*.tmp
+*.temp
+
+# 백업 파일
+*.bak
+*.backup
+
+# Node.js (만약 나중에 사용한다면)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 빌드 결과물
+dist/
+build/
