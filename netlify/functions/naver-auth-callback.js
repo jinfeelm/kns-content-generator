@@ -36,8 +36,10 @@ exports.handler = async function(event, context) {
 
     return {
       statusCode: 302,
+      multiValueHeaders: {
+        'Set-Cookie': cookies // ✅ 해결: 'multiValueHeaders'는 배열을 처리할 수 있음
+      },
       headers: {
-        'Set-Cookie': cookies,
         Location: '/'
       },
       body: ''
@@ -46,5 +48,6 @@ exports.handler = async function(event, context) {
     return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
   }
 };
+
 
 
