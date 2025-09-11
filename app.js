@@ -1,4 +1,4 @@
-// KNS 카페 콘텐츠 생성기 v3.5 - Ultimate Edition (Complete Functions)
+// KNS 카페 콘텐츠 생성기 v3.7 - Auto-Seasonal & Final
 document.addEventListener('DOMContentLoaded', () => {
     // config.js가 없거나 validateApiKey 함수가 없을 경우를 대비한 더미 함수
     if (typeof window.validateApiKey !== 'function') {
@@ -57,8 +57,48 @@ document.addEventListener('DOMContentLoaded', () => {
         situations: ['최근 아이가 성적이 올라 기분이 좋은 상태', '아이의 사춘기 때문에 골머리를 앓고 있는 상태', 'KNS 설명회에서 좋은 정보를 얻어 신이 난 상태', '다른 엄마와의 교육관 차이로 스트레스를 받은 상태', '자녀의 장래희망 때문에 진지하게 고민 중인 상태', '겨울방학 특강을 뭘 들을지 행복한 고민에 빠진 상태', '아이의 스마트폰 사용 문제로 크게 다툰 상태', '시험 결과에 실망했지만, 아이를 다독여주려는 상태', '새로운 입시 정책 발표로 마음이 복잡한 상태', '아이의 학습 태도가 좋아져 뿌듯함을 느끼는 상태', '주변의 기대 때문에 부담감을 느끼는 상태', '자녀의 친구 관계 때문에 걱정이 많은 상태'],
         styles: ['이모티콘(😂, 👍, ㅠㅠ)을 많이 사용하는', '핵심만 간단하게 전달하는', '질문을 던져 다른 사람의 의견을 구하는', '자신의 경험을 상세하게 공유하는', '다소 직설적이고 솔직한 화법을 구사하는', '객관적인 정보를 바탕으로 이야기하는', '따뜻하고 다정한 말투를 사용하는', '유머와 농담을 섞어 분위기를 부드럽게 만드는']
     };
+
     const personaDetails = {
-        '영재반 준비맘': { icon: '🧐', color: 'text-yellow-400' }, '특목·자사고 준비맘': { icon: '📚', color: 'text-blue-400' }, '자유학년제 전략맘': { icon: '🧭', color: 'text-indigo-400' }, '내신 격전지맘': { icon: '🔥', color: 'text-red-400' }, '고입 최종관문맘': { icon: '🎯', color: 'text-purple-400' }
+        '초등 저학년맘': { 
+            icon: '🧐', 
+            color: 'text-yellow-400',
+            description: "당신은 초등학교 저학년(2~4학년) 자녀를 둔 엄마입니다. 이제 막 '엄마표 영어'의 한계를 느끼고 첫 영어학원을 알아보는 단계입니다. 당신의 주된 관심사는 아이가 영어에 흥미를 잃지 않고 즐겁게 배우는 것, 좋은 학습 습관을 형성하는 것, 그리고 영어 원서 읽기 등입니다. '영재교육원' 같은 어려운 입시보다는, 아이의 눈높이에 맞는 현실적인 고민을 이야기합니다."
+        }, 
+        '특목·자사고 준비맘': { 
+            icon: '📚', 
+            color: 'text-blue-400',
+            description: "당신은 초등학교 고학년(5~6학년) 자녀를 둔, 특목고·자사고 입시를 본격적으로 준비하는 엄마입니다. 중등 과정 선행 학습과 입시 로드맵에 관심이 많습니다. KNS의 '앤솔로지'나 '수단비' 같은 프로그램을 중등 과정의 핵심 목표로 삼고 있으며, 설명회나 주변 정보를 통해 얻은 지식을 바탕으로 이야기합니다."
+        }, 
+        '중등 입문맘': { 
+            icon: '🧭', 
+            color: 'text-indigo-400',
+            description: "당신은 중학교 1학년 자녀를 둔 엄마입니다. 초등학교와는 모든 게 달라진 중학교 시스템에 적응하느라 정신없습니다. 아이가 새로운 친구는 잘 사귀는지, 수행평가는 어떻게 챙겨야 할지, 1년 뒤에 볼 첫 시험은 벌써부터 걱정되는, 모든 것이 처음이라 서툴고 궁금한 게 많은 학부모입니다."
+        }, 
+        '내신 격전지맘': { 
+            icon: '🔥', 
+            color: 'text-red-400',
+            description: "당신은 중학교 2학년 자녀를 둔 엄마입니다. 갑자기 어려워진 내신, 자녀의 사춘기와 교우관계 등 가장 현실적이고 힘든 시기를 보내고 있습니다. 다른 학부모들과의 공감과 위로를 원하며, KNS의 심화 프로그램이 이 시기를 극복하는 데 어떤 도움을 줄 수 있는지에 대한 경험담을 나누고 싶어합니다."
+        }, 
+        '고입 최종관문맘': { 
+            icon: '🎯', 
+            color: 'text-purple-400',
+            description: "당신은 중학교 3학년 자녀를 둔 엄마입니다. 고등학교 최종 선택, 자기소개서, 면접 준비 등 입시의 마지막 단계를 치르고 있습니다. 자녀의 스펙을 기반으로 한 예리한 질문을 던지거나, 다른 사람의 글에 깊이 있는 분석 댓글을 다는 '고수'의 면모를 보입니다. KNS의 콘텐츠가 최종 입시 결과에 미치는 영향에 대해 확신을 가지고 이야기합니다."
+        }
+    };
+
+    const seasonalKeywords = {
+        0: { guide: "지금은 1월입니다. 겨울방학 특강, 새 학년 준비, 예비중/예비고1 과정에 대한 주제가 좋습니다.", activeCategories: ['학습법/공부 습관', '학교 정보/입시 전략', 'KNS 자체 콘텐츠', '학원 생활/시스템 문의'], backgroundCategories: ['자녀 관계/멘탈 관리'] },
+        1: { guide: "지금은 2월입니다. 신학기 증후군, 새 학년 내신 대비 전략, 마무리 특강에 대한 주제가 좋습니다.", activeCategories: ['학습법/공부 습관', '학교 정보/입시 전략', 'KNS 자체 콘텐츠', '학원 생활/시스템 문의'], backgroundCategories: ['자녀 관계/멘탈 관리'] },
+        2: { guide: "지금은 3월입니다. 새 학기 시작, 새로운 친구 관계, 1학기 학습 계획에 대한 주제가 좋습니다.", activeCategories: ['학습법/공부 습관', '학교 정보/입시 전략', 'KNS 자체 콘텐츠', '학원 생활/시스템 문의'], backgroundCategories: ['자녀 관계/멘탈 관리'] },
+        3: { guide: "지금은 4월입니다. 1학기 중간고사 대비, 수행평가 시즌, 춘곤증 극복에 대한 주제가 좋습니다.", activeCategories: ['학습법/공부 습관', '학교 정보/입시 전략', 'KNS 자체 콘텐츠', '학원 생활/시스템 문의'], backgroundCategories: ['자녀 관계/멘탈 관리'] },
+        4: { guide: "지금은 5월입니다. 중간고사 결과 분석, 가정의 달, 학습 슬럼프 극복에 대한 주제가 좋습니다.", activeCategories: ['학습법/공부 습관', '학교 정보/입시 전략', 'KNS 자체 콘텐츠', '학원 생활/시스템 문의'], backgroundCategories: ['자녀 관계/멘탈 관리'] },
+        5: { guide: "지금은 6월입니다. 기말고사 대비, 여름방학 계획, 입시 설명회 시즌에 대한 주제가 좋습니다.", activeCategories: ['학습법/공부 습관', '학교 정보/입시 전략', 'KNS 자체 콘텐츠', '학원 생활/시스템 문의'], backgroundCategories: ['자녀 관계/멘탈 관리'] },
+        6: { guide: "지금은 7월입니다. 여름방학 시작, 방학 특강, 휴가와 학습 밸런스에 대한 주제가 좋습니다.", activeCategories: ['학습법/공부 습관', '학교 정보/입시 전략', 'KNS 자체 콘텐츠', '학원 생활/시스템 문의'], backgroundCategories: ['자녀 관계/멘탈 관리'] },
+        7: { guide: "지금은 8월입니다. 2학기 선행, 개학 준비, 방학 숙제 마무리에 대한 주제가 좋습니다.", activeCategories: ['학습법/공부 습관', '학교 정보/입시 전략', 'KNS 자체 콘텐츠', '학원 생활/시스템 문의'], backgroundCategories: ['자녀 관계/멘탈 관리'] },
+        8: { guide: "지금은 9월입니다. 2학기 시작, 중간고사 대비, 대입 수시 원서 접수 시즌에 대한 주제가 좋습니다.", activeCategories: ['학습법/공부 습관', '학교 정보/입시 전략', 'KNS 자체 콘텐츠', '학원 생활/시스템 문의'], backgroundCategories: ['자녀 관계/멘탈 관리'] },
+        9: { guide: "지금은 10월입니다. 2학기 중간고사, 단기 방학, 고입 원서 준비에 대한 주제가 좋습니다.", activeCategories: ['학습법/공부 습관', '학교 정보/입시 전략', 'KNS 자체 콘텐츠', '학원 생활/시스템 문의'], backgroundCategories: ['자녀 관계/멘탈 관리'] },
+        10: { guide: "지금은 11월입니다. 기말고사 대비, 수능 시즌, 겨울방학 계획에 대한 주제가 좋습니다.", activeCategories: ['학습법/공부 습관', '학교 정보/입시 전략', 'KNS 자체 콘텐츠', '학원 생활/시스템 문의'], backgroundCategories: ['자녀 관계/멘탈 관리'] },
+        11: { guide: "지금은 12월입니다. 겨울방학 시작, 연말, 새해 학습 계획에 대한 주제가 좋습니다.", activeCategories: ['학습법/공부 습관', '학교 정보/입시 전략', 'KNS 자체 콘텐츠', '학원 생활/시스템 문의'], backgroundCategories: ['자녀 관계/멘탈 관리'] }
     };
 
     function switchMode(mode) {
@@ -142,6 +182,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return instruction;
     }
 
+    function getSeasonalGuide(month, category) {
+        const season = seasonalKeywords[month];
+        if (!season) return "";
+
+        if (season.activeCategories.includes(category)) {
+            return `**[시의성 가이드] ${season.guide}**`;
+        }
+        if (season.backgroundCategories.includes(category)) {
+            const hint = season.guide.split('입니다.')[1]?.trim().split(' ')[0] || "현재 시기";
+            return `**[시의성 힌트] 현재 시점은 '${hint}'인 것을 참고하여 글의 배경으로만 자연스럽게 활용해주세요.**`;
+        }
+        return "";
+    }
+
     async function generateContent() {
         const allButtons = document.querySelectorAll('button');
         allButtons.forEach(b => b.disabled = true);
@@ -152,20 +206,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedPersona = personaSelect.value;
         const selectedCategory = categorySelect.value;
         
+        const coreDescription = personaDetails[selectedPersona].description;
+
         const randomModifier = {
             personality: personaModifiers.personalities[Math.floor(Math.random() * personaModifiers.personalities.length)],
             situation: personaModifiers.situations[Math.floor(Math.random() * personaModifiers.situations.length)],
             style: personaModifiers.styles[Math.floor(Math.random() * personaModifiers.styles.length)],
         };
-        const dynamicPersonaDescription = `당신은 '${selectedPersona}' 역할을 맡았습니다. 
-        - 당신의 성격은 '${randomModifier.personality}' 타입입니다.
-        - 당신의 현재 상황은 '${randomModifier.situation}'입니다.
-        - 당신의 주된 소통 스타일은 '${randomModifier.style}' 방식입니다.
-        이 세 가지 조합에 완벽하게 몰입하여, 실제 학부모가 쓴 것처럼 자연스럽고 현실적인 콘텐츠를 생성해주세요.`;
+        const dynamicPersonaDescription = `**기본 프로필:** ${coreDescription}\n\n**추가 상황:**\n- 당신의 성격은 '${randomModifier.personality}' 타입입니다.\n- 당신의 현재 상황은 '${randomModifier.situation}'입니다.\n- 당신의 주된 소통 스타일은 '${randomModifier.style}' 방식입니다.\n이 모든 조합에 완벽하게 몰입하여, 실제 학부모가 쓴 것처럼 자연스럽고 현실적인 콘텐츠를 생성해주세요.`;
         
         const smartInstruction = getSmartInstruction(selectedCategory);
+        const currentMonth = new Date().getMonth();
+        const seasonalGuide = getSeasonalGuide(currentMonth, selectedCategory);
 
-        let systemPrompt = `당신은 대한민국 서울 대치동의 학부모들이 이용하는 온라인 입시 정보 카페를 위한 콘텐츠를 생성하는 AI입니다. 실제 학부모가 쓴 것처럼 자연스럽고 현실감 있는 톤앤매너를 완벽하게 구현해야 합니다. 다음 페르소나의 역할에 100% 빙의하여 응답해주세요:\n\n**페르소나 프로필:**\n${dynamicPersonaDescription}\n\n**콘텐츠 생성 규칙:**\n1. 게시글의 경우, 제목과 본문을 "제목: [제목 내용]"과 "본문: [본문 내용]" 형식으로 명확히 구분하여 생성합니다.\n2. 댓글의 경우, "댓글: [댓글 내용]" 형식으로 생성합니다.\n3. 실제 커뮤니티처럼 이모티콘(😊, ㅠㅠ, 👍 등)을 자연스럽게 사용하고, 적절한 줄 바꿈으로 가독성을 높여주세요.\n4. 매번 다른 스타일과 표현을 사용하여 천편일률적이지 않게 작성하세요.\n5. 개인적인 경험이나 구체적인 상황을 포함하여 현실감을 높이세요.\n${smartInstruction}`;
+        let systemPrompt = `당신은 대한민국 서울 대치동의 학부모들이 이용하는 온라인 입시 정보 카페를 위한 콘텐츠를 생성하는 AI입니다. 실제 학부모가 쓴 것처럼 자연스럽고 현실감 있는 톤앤매너를 완벽하게 구현해야 합니다. 다음 페르소나의 역할에 100% 빙의하여 응답해주세요:\n\n**페르소나 프로필:**\n${dynamicPersonaDescription}\n\n${seasonalGuide ? seasonalGuide + '\n\n' : ''}**콘텐츠 생성 규칙:**\n1. 게시글의 경우, 제목과 본문을 "제목: [제목 내용]"과 "본문: [본문 내용]" 형식으로 명확히 구분하여 생성합니다.\n2. 댓글의 경우, "댓글: [댓글 내용]" 형식으로 생성합니다.\n3. 실제 커뮤니티처럼 이모티콘(😊, ㅠㅠ, 👍 등)을 자연스럽게 사용하고, 적절한 줄 바꿈으로 가독성을 높여주세요.\n4. 매번 다른 스타일과 표현을 사용하여 천편일률적이지 않게 작성하세요.\n5. 개인적인 경험이나 구체적인 상황을 포함하여 현실감을 높이세요.\n${smartInstruction}`;
 
         let userQuery = '';
         if (currentMode === 'post') {
@@ -266,8 +320,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (contentHistory.length > maxHistory) contentHistory = contentHistory.slice(0, maxHistory);
         localStorage.setItem('knsContentHistory', JSON.stringify(contentHistory));
     }
-    
-    // --- 아래부터 비어있던 함수들을 모두 채웁니다 ---
 
     function loadHistory() {
         historyList.innerHTML = '';
@@ -302,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const item = contentHistory.find(h => h.id == id);
         if (item) {
             switchMode('comment');
-            referencePostInput.value = item.mode === 'comment' ? item.referencePost : `제목: ${item.title}\n\n${item.body}`;
+            referencePostInput.value = item.mode === 'comment' ? (item.referencePost || `제목: ${item.title}\n\n${item.body}`) : `제목: ${item.title}\n\n${item.body}`;
             historyModal.classList.add('hidden');
             advancedControls.classList.remove('hidden');
             toggleAdvanced.textContent = '⚙️ 전문가 모드 닫기';
@@ -327,7 +379,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!overallStatsEl || !userStatsEl || !categoryStatsEl || !personaStatsEl || !recentActivityEl) return;
 
-        // Overall Stats
         const totalContent = contentHistory.length;
         const totalPosts = contentHistory.filter(item => item.mode === 'post').length;
         const totalComments = contentHistory.length - totalPosts;
@@ -338,22 +389,18 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="flex justify-between"><span>참여 작성자:</span><span class="font-bold text-yellow-400">${uniqueAuthors}명</span></div>
         `;
 
-        // User Stats
         const authorStats = {};
         contentHistory.forEach(item => { authorStats[item.author] = (authorStats[item.author] || 0) + 1; });
         userStatsEl.innerHTML = Object.entries(authorStats).sort((a, b) => b[1] - a[1]).map(([author, count]) => `<div class="flex justify-between"><span>${author}</span><span class="font-bold text-emerald-400">${count}개</span></div>`).join('') || '<p class="text-slate-400 text-sm">데이터가 없습니다.</p>';
 
-        // Category Stats
         const categoryStats = {};
         contentHistory.forEach(item => { categoryStats[item.category] = (categoryStats[item.category] || 0) + 1; });
         categoryStatsEl.innerHTML = Object.entries(categoryStats).sort((a, b) => b[1] - a[1]).map(([category, count]) => `<div class="flex justify-between"><span>${category}</span><span class="font-bold text-emerald-400">${count}개</span></div>`).join('') || '<p class="text-slate-400 text-sm">데이터가 없습니다.</p>';
 
-        // Persona Stats
         const personaStats = {};
         contentHistory.forEach(item => { personaStats[item.persona] = (personaStats[item.persona] || 0) + 1; });
         personaStatsEl.innerHTML = Object.entries(personaStats).sort((a, b) => b[1] - a[1]).map(([persona, count]) => `<div class="flex justify-between"><span>${persona}</span><span class="font-bold text-emerald-400">${count}개</span></div>`).join('') || '<p class="text-slate-400 text-sm">데이터가 없습니다.</p>';
         
-        // Recent Activity
         recentActivityEl.innerHTML = contentHistory.slice(0, 5).map(item => `
             <div class="text-sm">
                 <span>${item.mode === 'post' ? '📝' : '💬'}</span>
@@ -399,7 +446,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 parts[0] = newText;
                 newBody = parts.join('\n');
             } else {
-                // 가장 긴 문장을 교체하는 로직
                 const sentences = originalBody.split(/([.!?\n]+)/);
                 if (sentences.length <= 1) {
                     newBody = newText;
@@ -425,7 +471,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-
     function init() {
         userNameInput.value = localStorage.getItem('knsContentGeneratorUserName') || '';
         userNameInput.addEventListener('change', () => localStorage.setItem('knsContentGeneratorUserName', userNameInput.value.trim()));
@@ -447,7 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         copyBtn.addEventListener('click', () => {
             const title = resultTitle.textContent;
-            const body = resultBody.innerText; // 수정된 내용을 가져오기 위해 innerText 사용
+            const body = resultBody.innerText;
             const fullText = title === '(댓글)' ? body : `제목: ${title}\n\n${body}`;
             navigator.clipboard.writeText(fullText).then(() => {
                 copyBtn.textContent = '복사 완료!';

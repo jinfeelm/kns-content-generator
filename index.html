@@ -28,11 +28,10 @@
             from, to { background-color: transparent; }
             50% { background-color: #60a5fa; }
         }
-        /* contenteditable placeholder */
         [contenteditable]:empty:before {
             content: attr(placeholder);
             pointer-events: none;
-            display: block; /* For Firefox */
+            display: block;
             color: #64748b;
         }
     </style>
@@ -43,7 +42,7 @@
         <!-- Header -->
         <header class="text-center mb-8 md:mb-12">
             <h1 class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">KNS 카페 콘텐츠 생성기</h1>
-            <p class="text-slate-400 text-lg">v3.5 <span class="text-xs ml-1 px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full">ft. gemini</span></p>
+            <p class="text-slate-400 text-lg">v3.7 <span class="text-xs ml-1 px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-full">Dynamic Persona</span></p>
         </header>
 
         <!-- Main Content -->
@@ -56,9 +55,9 @@
                         <label for="persona" class="block text-lg font-bold text-slate-300 mb-2">1. 페르소나 선택</label>
                         <p class="text-sm text-slate-400 mb-3">담당 학년에 맞는 엄마를 선택해주세요.</p>
                         <select id="persona" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2.5 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition text-base">
-                            <option value="영재반 준비맘">영재반 준비맘 (초2~4)</option>
+                            <option value="초등 저학년맘">초등 저학년맘 (초2~4)</option>
                             <option value="특목·자사고 준비맘">특목·자사고 준비맘 (초5~6)</option>
-                            <option value="자유학년제 전략맘">자유학년제 전략맘 (중1)</option>
+                            <option value="중등 입문맘">중등 입문맘 (중1)</option>
                             <option value="내신 격전지맘">내신 격전지맘 (중2)</option>
                             <option value="고입 최종관문맘">고입 최종관문맘 (중3)</option>
                         </select>
