@@ -1,22 +1,16 @@
-// KNS 카페 콘텐츠 생성기 메인 애플리케이션
-// API 키는 config.js에서 관리됩니다.
-
+// KNS 카페 콘텐츠 생성기 v3.0 - Dynamic Persona (Full Code)
 document.addEventListener('DOMContentLoaded', () => {
-    // API 키 유효성 검사
     if (!validateApiKey()) {
         showApiKeyError();
         return;
     }
 
-    // DOM 요소들
+    // --- DOM 요소 ---
     const personaSelect = document.getElementById('persona');
     const scenarioSelect = document.getElementById('scenario');
-    const postTypeSelect = document.getElementById('postType');
     const categorySelect = document.getElementById('category');
     const postLengthSelect = document.getElementById('postLength');
-    const toneOptionsContainer = document.getElementById('toneOptions');
-    const keywordInput = document.getElementById('keyword');
-    const affiliationCheckbox = document.getElementById('includeAffiliation');
+    const userNameInput = document.getElementById('userName');
     const generateBtn = document.getElementById('generateBtn');
     const copyBtn = document.getElementById('copyBtn');
     const naverLoginBtn = document.getElementById('naverLoginBtn');
@@ -34,187 +28,62 @@ document.addEventListener('DOMContentLoaded', () => {
     const cafeIdInput = document.getElementById('cafeIdInput');
     const menuIdInput = document.getElementById('menuIdInput');
     
-    // New elements for improved functionality
+    // v3.0 UI Elements
+    const goalBtnConcern = document.getElementById('goalBtnConcern');
+    const goalBtnInfo = document.getElementById('goalBtnInfo');
+    const goalBtnDaily = document.getElementById('goalBtnDaily');
+    const goalBtnComment = document.getElementById('goalBtnComment');
+    const advancedControls = document.getElementById('advancedControls');
+    const toggleAdvanced = document.getElementById('toggleAdvanced');
+
+    // 전문가 모드 UI Elements
     const postModeBtn = document.getElementById('postModeBtn');
     const commentModeBtn = document.getElementById('commentModeBtn');
+    const postTypeSelect = document.getElementById('postType');
     const postTypeSection = document.getElementById('postTypeSection');
     const referencePostSection = document.getElementById('referencePostSection');
     const referencePostInput = document.getElementById('referencePost');
-    const userNameInput = document.getElementById('userName');
+    
+    // 모달 관련
     const historyBtn = document.getElementById('historyBtn');
     const statsBtn = document.getElementById('statsBtn');
-    const simpleModeToggle = document.getElementById('simpleModeToggle');
-    const randomizeBtn = document.getElementById('randomizeBtn');
     const historyModal = document.getElementById('historyModal');
     const statsModal = document.getElementById('statsModal');
     const closeHistoryBtn = document.getElementById('closeHistoryBtn');
     const closeStatsBtn = document.getElementById('closeStatsBtn');
     const historyList = document.getElementById('historyList');
     
-    // State management
-    let currentMode = 'post'; // 'post' or 'comment'
+    // --- 상태 관리 ---
+    let currentMode = 'post';
     let contentHistory = JSON.parse(localStorage.getItem('knsContentHistory') || '[]');
     let lastPostedUrl = null;
-    let simpleMode = false;
-    
-    const tones = [
-        { id: 'anxious', name: '#불안한' }, { id: 'curious', name: '#궁금한' },
-        { id: 'proud', name: '#자랑스러운' }, { id: 'happy', name: '#기쁜' },
-        { id: 'advice', name: '#조언을구하는' }, { id: 'humorous', name: '#유머러스한' },
-        { id: 'serious', name: '#진지한' }, { id: 'objective', name: '#객관적인' }
-    ];
 
-    // 콘텐츠 다양성을 위한 랜덤 요소들
-    const randomElements = {
-        writingStyles: [
-            "개인적인 경험담을 바탕으로",
-            "구체적인 상황을 예시로 들어",
-            "다른 학부모들의 의견을 궁금해하며",
-            "실제 데이터나 통계를 언급하며",
-            "자녀와의 대화 내용을 포함하여",
-            "최근 경험한 일을 바탕으로"
-        ],
-        emotionalExpressions: [
-            "정말 고민이에요", "너무 궁금해요", "걱정이 돼요", "기대돼요", 
-            "혼란스러워요", "불안해요", "희망적이에요", "조급해요"
-        ],
-        questionStyles: [
-            "혹시 비슷한 경험 있으신 분 계신가요?",
-            "어떻게 하시는지 궁금해요",
-            "조언 부탁드려요",
-            "어떤 게 맞는 걸까요?",
-            "다른 분들은 어떻게 생각하세요?",
-            "경험담 공유해주세요"
-        ]
-    };
-
-    // 백엔드 프롬프트에 주입할 스타일 템플릿(순환/랜덤 적용)
-    const styleTemplates = [
-        {
-            name: '문답형',
-            instruction: '소제목과 짧은 문답(Q/A) 형식으로 핵심만 간결히 정리하세요.'
-        },
-        {
-            name: '체크리스트형',
-            instruction: '핵심 포인트를 체크리스트(✔) 3~7개로 나열하고 각 항목에 한두 문장씩 보완하세요.'
-        },
-        {
-            name: '경험담 서사형',
-            instruction: '지난 1~2주의 구체적 사건을 서사처럼 기술하고, 마지막에 교훈/인사이트 2~3개로 정리하세요.'
-        },
-        {
-            name: '데이터 인용형',
-            instruction: '수치·비율·빈도 같은 수치 표현을 2개 이상 포함하고, 출처는 [학교/학원 내부 데이터]처럼 일반화해 표기하세요.'
-        },
-        {
-            name: '질문 유도형',
-            instruction: '문단마다 독자에게 1문장 질문을 던져 상호작용을 유도하세요.'
-        }
-    ];
-
-    // 카테고리별 톤앤매너 매핑
-    const categoryToneMapping = {
-        'KNS 자체 콘텐츠': {
-            defaultTones: ['#자랑스러운', '#기쁜'],
-            avoidTones: ['#불안한', '#혼란스러운'],
-            style: "KNS 프로그램에 대한 긍정적인 경험과 효과를 강조하며, 구체적인 성과나 변화를 언급하는 스타일"
-        },
-        '학습법/공부 습관': {
-            defaultTones: ['#진지한', '#조언을구하는'],
-            avoidTones: ['#유머러스한'],
-            style: "실용적이고 구체적인 학습 방법에 대해 논의하며, 경험담과 팁을 공유하는 스타일"
-        },
-        '학교 정보/입시 전략': {
-            defaultTones: ['#객관적인', '#궁금한'],
-            avoidTones: ['#유머러스한'],
-            style: "정보 전달에 중점을 두며, 구체적인 데이터나 사례를 바탕으로 한 분석적 스타일"
-        },
-        '자녀 관계/멘탈 관리': {
-            defaultTones: ['#불안한', '#조언을구하는'],
-            avoidTones: ['#객관적인'],
-            style: "감정적 공감과 위로를 바탕으로 한 따뜻하고 공감적인 스타일"
-        },
-        '학원 생활/시스템 문의': {
-            defaultTones: ['#궁금한', '#조언을구하는'],
-            avoidTones: ['#자랑스러운'],
-            style: "실용적인 정보를 구하는 질문 중심의 스타일"
-        },
-        '일상/유머': {
-            defaultTones: ['#유머러스한', '#기쁜'],
-            avoidTones: ['#진지한', '#불안한'],
-            style: "가벼운 일상 이야기와 유머를 포함한 편안한 스타일"
-        }
+    // --- Dynamic Persona 재료 (핵심 기능) ---
+    const personaModifiers = {
+        personalities: ['정보력이 뛰어나고 꼼꼼한', '다른 엄마들과 교류를 즐기는 사교적인', '아이의 의견을 존중하는 민주적인', '목표 지향적이고 계획적인', '다소 불안감이 높고 예민한', '긍정적이고 낙천적인', '데이터와 통계를 신뢰하는 분석적인', '감성적이고 공감 능력이 뛰어난', '자녀 교육에 대한 주관이 뚜렷한', '유머 감각이 있고 위트있는'],
+        situations: ['최근 아이가 성적이 올라 기분이 좋은 상태', '아이의 사춘기 때문에 골머리를 앓고 있는 상태', 'KNS 설명회에서 좋은 정보를 얻어 신이 난 상태', '다른 엄마와의 교육관 차이로 스트레스를 받은 상태', '자녀의 장래희망 때문에 진지하게 고민 중인 상태', '겨울방학 특강을 뭘 들을지 행복한 고민에 빠진 상태', '아이의 스마트폰 사용 문제로 크게 다툰 상태', '시험 결과에 실망했지만, 아이를 다독여주려는 상태', '새로운 입시 정책 발표로 마음이 복잡한 상태', '아이의 학습 태도가 좋아져 뿌듯함을 느끼는 상태', '주변의 기대 때문에 부담감을 느끼는 상태', '자녀의 친구 관계 때문에 걱정이 많은 상태'],
+        styles: ['이모티콘(😂, 👍, ㅠㅠ)을 많이 사용하는', '핵심만 간단하게 전달하는', '질문을 던져 다른 사람의 의견을 구하는', '자신의 경험을 상세하게 공유하는', '다소 직설적이고 솔직한 화법을 구사하는', '객관적인 정보를 바탕으로 이야기하는', '따뜻하고 다정한 말투를 사용하는', '유머와 농담을 섞어 분위기를 부드럽게 만드는']
     };
 
     const personaDetails = {
-        '영재반 준비맘': { 
-            icon: '🧐', color: 'text-yellow-400',
-            description: "당신은 현재 초등학교 저학년(2~4학년) 자녀를 둔 '영재반 준비맘'의 역할을 맡았습니다. 당신의 주된 관심사는 영어 유창성, 심화 원서 독서, 올바른 학습 습관 형성 등입니다. 이제 막 입시의 세계에 발을 들였기 때문에 호기심이 많고 기본적인 질문을 많이 하는 스타일입니다. KNS의 자체 교재보다는, 대치동의 전반적인 교육 방식이나 저학년 시기에 필요한 영어 학습의 본질에 대해 더 궁금해합니다."
-        },
-        '특목·자사고 준비맘': { 
-            icon: '📚', color: 'text-blue-400',
-            description: "당신은 현재 초등학교 고학년(5~6학년) 자녀를 둔 '특목·자사고 준비맘'의 역할을 맡았습니다. 당신의 주된 관심사는 특목고/자사고 입시 로드맵, 중등 과정 선행 등입니다. KNS의 '앤솔로지'나 '수단비' 같은 프로그램을 중등 과정의 핵심 목표로 삼고 있으며, 설명회나 주변의 정보를 통해 얻은 지식을 바탕으로 이야기합니다."
-        },
-        '자유학년제 전략맘': { 
-            icon: '🧭', color: 'text-indigo-400',
-            description: "당신은 현재 중학교 1학년 자녀를 둔 '자유학년제 전략맘'의 역할을 맡았습니다. 자유학년제를 어떻게 보내야 할지, 첫 내신 시험은 어떻게 대비해야 할지 등 처음 겪는 중등 생활에 대한 불안감과 고민이 많습니다. KNS의 프로그램이 내신 대비에 어떻게 도움이 될지 궁금해하며, 실질적인 정보를 원합니다."
-        },
-        '내신 격전지맘': { 
-            icon: '🔥', color: 'text-red-400',
-            description: "당신은 현재 중학교 2학년 자녀를 둔 '내신 격전지맘'의 역할을 맡았습니다. 갑자기 어려워진 내신, 자녀의 사춘기와 교우관계 등 가장 현실적이고 힘든 시기를 보내고 있습니다. 다른 학부모들과의 공감과 위로를 원하며, KNS의 심화 프로그램(앤솔로지, 수단비 등)이 이 시기를 극복하는 데 어떤 도움을 줄 수 있는지에 대한 경험담을 나누고 싶어합니다."
-        },
-        '고입 최종관문맘': { 
-            icon: '🎯', color: 'text-purple-400',
-            description: "당신은 현재 중학교 3학년 자녀를 둔 '고입 최종관문맘'의 역할을 맡았습니다. 고등학교 최종 선택, 자소서, 면접 준비 등 입시의 마지막 단계를 치르고 있습니다. 자녀의 스펙을 기반으로 한 예리한 질문을 던지거나, 다른 사람의 글에 깊이 있는 분석 댓글을 다는 '고수'의 면모를 보입니다. KNS의 콘텐츠가 최종 입시 결과에 미치는 영향에 대해 확신을 가지고 이야기합니다."
-        }
+        '영재반 준비맘': { icon: '🧐', color: 'text-yellow-400' },
+        '특목·자사고 준비맘': { icon: '📚', color: 'text-blue-400' },
+        '자유학년제 전략맘': { icon: '🧭', color: 'text-indigo-400' },
+        '내신 격전지맘': { icon: '🔥', color: 'text-red-400' },
+        '고입 최종관문맘': { icon: '🎯', color: 'text-purple-400' }
     };
     
     const scenarios = {
-        '영재반 준비맘': [
-            "(기본) 일반적인 고민",
-            "영어 유치원을 안 나왔는데, 학습 격차가 걱정돼요.",
-            "아이가 영어 원서 읽기를 지루해해요.",
-            "엄마표 영어의 한계를 느끼고 학원을 알아보는 중이에요.",
-            "초등 저학년 때 문법, 꼭 시작해야 할까요?",
-            "친구들과 비교하며 아이를 다그치게 돼요."
-        ],
-        '특목·자사고 준비맘': [
-            "(기본) 일반적인 고민",
-            "중등 선행, 어디까지 얼마나 해야 할지 감이 안 와요.",
-            "특목고 입시 설명회를 다녀왔는데 더 혼란스러워요.",
-            "수학에 비해 영어 선행이 부족한 것 같아 불안해요.",
-            "아이가 스스로 목표의식이 없어서 고민이에요.",
-            "초등 고학년, 본격적인 입시 준비 전 꼭 챙겨야 할 것은?"
-        ],
-        '자유학년제 전략맘': [
-            "(기본) 일반적인 고민",
-            "자유학년제, 정말 놀게만 둬도 괜찮을까요?",
-            "첫 내신 시험을 앞두고 아이보다 제가 더 떨려요.",
-            "수행평가 비중이 높다는데 어떻게 준비해야 하나요?",
-            "초등 때와는 다른 중등 공부법에 아이가 힘들어해요.",
-            "아직 뚜렷한 목표 고등학교가 없어서 조급해요."
-        ],
-        '내신 격전지맘': [
-            "(기본) 일반적인 고민 (내신, 사춘기, 자기주도학습)",
-            "아이가 갑자기 특정 과목(예: 수학)에 흥미를 잃었어요.",
-            "학원 숙제가 너무 많다고 아이가 번아웃을 호소해요.",
-            "친구가 다니는 [XX학원]으로 옮겨달라고 졸라요.",
-            "시험 성적은 잘 나왔는데, 과정(ex: 벼락치기)이 맘에 들지 않아요.",
-            "스마트폰 사용 문제로 아이와 갈등이 심해요."
-        ],
-        '고입 최종관문맘': [
-            "(기본) 일반적인 고민",
-            "자소서에 어떤 활동을 녹여내야 할지 막막해요.",
-            "면접 준비, 학원에만 맡겨도 괜찮을까요?",
-            "일반고와 특목고 사이에서 마지막까지 고민돼요.",
-            "고등 선행, 지금 시작해도 늦지 않았을까요?",
-            "내신 성적이 아슬아슬한데, 소신 지원해야 할까요?"
-        ]
+        '영재반 준비맘': ["(기본) 일반적인 고민", "영어 유치원을 안 나왔는데, 학습 격차가 걱정돼요.", "아이가 영어 원서 읽기를 지루해해요.", "엄마표 영어의 한계를 느끼고 학원을 알아보는 중이에요.", "초등 저학년 때 문법, 꼭 시작해야 할까요?", "친구들과 비교하며 아이를 다그치게 돼요."],
+        '특목·자사고 준비맘': ["(기본) 일반적인 고민", "중등 선행, 어디까지 얼마나 해야 할지 감이 안 와요.", "특목고 입시 설명회를 다녀왔는데 더 혼란스러워요.", "수학에 비해 영어 선행이 부족한 것 같아 불안해요.", "아이가 스스로 목표의식이 없어서 고민이에요.", "초등 고학년, 본격적인 입시 준비 전 꼭 챙겨야 할 것은?"],
+        '자유학년제 전략맘': ["(기본) 일반적인 고민", "자유학년제, 정말 놀게만 둬도 괜찮을까요?", "첫 내신 시험을 앞두고 아이보다 제가 더 떨려요.", "수행평가 비중이 높다는데 어떻게 준비해야 하나요?", "초등 때와는 다른 중등 공부법에 아이가 힘들어해요.", "아직 뚜렷한 목표 고등학교가 없어서 조급해요."],
+        '내신 격전지맘': ["(기본) 일반적인 고민 (내신, 사춘기, 자기주도학습)", "아이가 갑자기 특정 과목(예: 수학)에 흥미를 잃었어요.", "학원 숙제가 너무 많다고 아이가 번아웃을 호소해요.", "친구가 다니는 [XX학원]으로 옮겨달라고 졸라요.", "시험 성적은 잘 나왔는데, 과정(ex: 벼락치기)이 맘에 들지 않아요.", "스마트폰 사용 문제로 아이와 갈등이 심해요."],
+        '고입 최종관문맘': ["(기본) 일반적인 고민", "자소서에 어떤 활동을 녹여내야 할지 막막해요.", "면접 준비, 학원에만 맡겨도 괜찮을까요?", "일반고와 특목고 사이에서 마지막까지 고민돼요.", "고등 선행, 지금 시작해도 늦지 않았을까요?", "내신 성적이 아슬아슬한데, 소신 지원해야 할까요?"]
     };
 
     function updateScenarios() {
         const selectedPersona = personaSelect.value;
-        const personaScenarios = scenarios[selectedPersona];
+        const personaScenarios = scenarios[selectedPersona] || [];
         scenarioSelect.innerHTML = '';
         personaScenarios.forEach(scenario => {
             const option = document.createElement('option');
@@ -224,23 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function applySimpleModeUI() {
-        const hideTargets = [
-            postTypeSection,
-            referencePostSection,
-            document.getElementById('postLength').parentElement,
-            document.getElementById('toneOptions').parentElement,
-            document.getElementById('keyword').parentElement
-        ];
-        hideTargets.forEach(el => {
-            if (!el) return;
-            if (simpleMode) el.classList.add('hidden'); else el.classList.remove('hidden');
-        });
-    }
-
     function switchMode(mode) {
         currentMode = mode;
-        
         if (mode === 'post') {
             postModeBtn.className = 'bg-emerald-500 text-white py-2 px-4 rounded-lg font-medium transition hover:bg-emerald-600';
             commentModeBtn.className = 'bg-slate-700 text-slate-300 py-2 px-4 rounded-lg font-medium transition hover:bg-slate-600';
@@ -254,9 +108,173 @@ document.addEventListener('DOMContentLoaded', () => {
             referencePostSection.classList.remove('hidden');
             generateBtn.textContent = '💬 댓글 생성하기';
         }
-        applySimpleModeUI();
     }
 
+    async function generateGoalBasedContent(goal) {
+        switch(goal) {
+            case 'concern':
+                postTypeSelect.value = 'SOS형';
+                categorySelect.value = ['학습법/공부 습관', '자녀 관계/멘탈 관리', '학교 정보/입시 전략'][Math.floor(Math.random() * 3)];
+                switchMode('post');
+                break;
+            case 'info':
+                postTypeSelect.value = '공유형';
+                categorySelect.value = Math.random() > 0.3 ? 'KNS 자체 콘텐츠' : '학교 정보/입시 전략';
+                switchMode('post');
+                break;
+            case 'daily':
+                postTypeSelect.value = '공유형';
+                categorySelect.value = '일상/유머';
+                switchMode('post');
+                break;
+            case 'comment':
+                switchMode('comment');
+                advancedControls.classList.remove('hidden');
+                toggleAdvanced.textContent = '⚙️ 전문가 모드 닫기';
+                referencePostInput.focus();
+                alert('댓글을 작성할 기존 글의 내용을 "참조할 글 내용"에 붙여넣고 [콘텐츠 생성하기] 버튼을 눌러주세요.');
+                return;
+        }
+
+        if (!userNameInput.value.trim()) {
+            const name = prompt("콘텐츠를 생성하기 전, 작성자 이름을 입력해주세요. (예: 김마케터)");
+            if (!name) return;
+            userNameInput.value = name;
+            localStorage.setItem('knsContentGeneratorUserName', name);
+        }
+        await generateContent();
+    }
+
+    async function generateContent() {
+        const allButtons = document.querySelectorAll('button');
+        allButtons.forEach(b => b.disabled = true);
+        outputPlaceholder.classList.add('hidden');
+        outputResult.classList.add('hidden');
+        outputLoading.classList.remove('hidden');
+        copyBtn.disabled = true;
+
+        const selectedPersona = personaSelect.value;
+        
+        const randomModifier = {
+            personality: personaModifiers.personalities[Math.floor(Math.random() * personaModifiers.personalities.length)],
+            situation: personaModifiers.situations[Math.floor(Math.random() * personaModifiers.situations.length)],
+            style: personaModifiers.styles[Math.floor(Math.random() * personaModifiers.styles.length)],
+        };
+
+        const dynamicPersonaDescription = `당신은 '${selectedPersona}' 역할을 맡았습니다. 
+        - 당신의 성격은 '${randomModifier.personality}' 타입입니다.
+        - 당신의 현재 상황은 '${randomModifier.situation}'입니다.
+        - 당신의 주된 소통 스타일은 '${randomModifier.style}' 방식입니다.
+        이 세 가지 조합에 완벽하게 몰입하여, 실제 학부모가 쓴 것처럼 자연스럽고 현실적인 콘텐츠를 생성해주세요.`;
+
+        let systemPrompt = `당신은 대한민국 서울 대치동의 교육열 높은 학부모들이 이용하는 온라인 입시 정보 카페를 위한 콘텐츠를 생성하는 AI입니다. 실제 학부모가 쓴 것처럼 자연스럽고 현실감 있는 톤앤매너를 완벽하게 구현해야 합니다. 다음 페르소나의 역할에 100% 빙의하여 응답해주세요:\n\n**페르소나 프로필:**\n${dynamicPersonaDescription}\n\n**콘텐츠 생성 규칙:**\n1. 게시글의 경우, 제목과 본문을 "제목: [제목 내용]"과 "본문: [본문 내용]" 형식으로 명확히 구분하여 생성합니다.\n2. 댓글의 경우, "댓글: [댓글 내용]" 형식으로 생성합니다.\n3. 실제 커뮤니티처럼 이모티콘(😊, ㅠㅠ, 👍 등)을 자연스럽게 사용하고, 적절한 줄 바꿈으로 가독성을 높여주세요.\n4. 매번 다른 스타일과 표현을 사용하여 천편일률적이지 않게 작성하세요.\n5. 개인적인 경험이나 구체적인 상황을 포함하여 현실감을 높이세요.`;
+
+        let userQuery = '';
+        
+        if (currentMode === 'post') {
+            userQuery = `
+            다음 조건에 맞춰 글을 생성해주세요.
+            - **글 유형:** ${postTypeSelect.value}
+            - **구체적인 상황:** ${scenarioSelect.value}
+            - **콘텐츠 카테고리:** ${categorySelect.value}
+            - **글 길이:** ${postLengthSelect.value}
+            - **요구사항:** 페르소나 프로필에 완벽하게 빙의해서, '구체적인 상황'과 '콘텐츠 카테고리'에 맞는 글을 자연스럽게 작성해주세요.
+            `;
+        } else {
+            const referencePost = referencePostInput.value.trim();
+            if (!referencePost) {
+                displayError("댓글을 달고 싶은 기존 글의 내용을 입력해주세요.");
+                allButtons.forEach(b => b.disabled = false);
+                return;
+            }
+            
+            userQuery = `
+            다음 조건에 맞춰 댓글을 생성해주세요.
+            - **참조할 기존 글:** \n${referencePost}\n
+            - **콘텐츠 카테고리:** ${categorySelect.value}
+            - **글 길이:** ${postLengthSelect.value}
+            - **요구사항:** 위의 '참조할 기존 글'에 대한 자연스러운 반응을 댓글로 작성해주세요. 페르소나 프로필에 완벽하게 빙의해서, 개인적인 경험이나 의견을 포함하여 현실감 있게 작성해야 합니다.
+            `;
+        }
+
+    try {
+        const apiUrl = `/.netlify/functions/generate`;
+        const generationConfig = {
+            temperature: 1.1,
+            topP: 0.95,
+            topK: 40,
+            candidateCount: 1
+        };
+        const payload = {
+            contents: [{ parts: [{ text: userQuery }] }],
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            generationConfig
+        };    
+
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
+
+        const result = await response.json();
+        const candidate = result.candidates?.[0];
+            
+        if (candidate && candidate.content?.parts?.[0]?.text) {
+            const rawText = candidate.content.parts[0].text;
+            let titleText = '';
+            let bodyText = '';
+
+            if (rawText.includes("제목:") && rawText.includes("본문:")) {
+                titleText = rawText.split("제목:")[1].split("본문:")[0].trim();
+                bodyText = rawText.split("본문:")[1].trim();
+            } else if (rawText.includes("댓글:")) {
+                titleText = `(댓글)`;
+                bodyText = rawText.split("댓글:")[1].trim();
+            } else {
+                titleText = "생성된 콘텐츠";
+                bodyText = rawText;
+            }
+            
+            displayResult(selectedPersona, titleText, bodyText);
+            saveToHistory({ title: titleText, body: bodyText });
+
+        } else {
+            displayError("AI로부터 유효한 응답을 받지 못했습니다.");
+        }
+
+        } catch (error) {
+            console.error("콘텐츠 생성 중 오류 발생:", error);
+            displayError(`오류가 발생했습니다: ${error.message}`);
+        } finally {
+            allButtons.forEach(b => b.disabled = false);
+            outputLoading.classList.add('hidden');
+        }
+    }
+    
+    function displayResult(persona, title, body) {
+        const personaInfo = personaDetails[persona];
+        resultTitle.textContent = title;
+        resultPersonaIcon.textContent = personaInfo.icon;
+        resultPersonaName.textContent = persona;
+        resultPersonaName.className = `font-semibold ${personaInfo.color}`;
+        resultBody.textContent = body;
+        copyBtn.disabled = false;
+        naverPostBtn.disabled = false;
+        outputResult.classList.remove('hidden');
+    }
+
+    function displayError(message) {
+         resultTitle.textContent = "오류";
+         resultPersonaIcon.textContent = "⚠️";
+         resultPersonaName.textContent = "시스템";
+         resultPersonaName.className = `font-semibold text-red-400`;
+         resultBody.textContent = message;
+         outputResult.classList.remove('hidden');
+    }
+    
     function saveToHistory(content) {
         const historyItem = {
             id: Date.now(),
@@ -268,28 +286,20 @@ document.addEventListener('DOMContentLoaded', () => {
             body: content.body,
             referencePost: currentMode === 'comment' ? referencePostInput.value : null,
             author: userNameInput.value.trim() || '익명',
-            scenario: scenarioSelect.value,
-            keyword: keywordInput.value.trim() || null,
-            tones: Array.from(toneOptionsContainer.querySelectorAll('input:checked')).map(el => el.value),
-            length: postLengthSelect.value
         };
-        
         contentHistory.unshift(historyItem);
         if (contentHistory.length > CONFIG.MAX_HISTORY_ITEMS) {
             contentHistory = contentHistory.slice(0, CONFIG.MAX_HISTORY_ITEMS);
         }
-        
         localStorage.setItem('knsContentHistory', JSON.stringify(contentHistory));
     }
-
+    
     function loadHistory() {
         historyList.innerHTML = '';
-        
         if (contentHistory.length === 0) {
             historyList.innerHTML = '<p class="text-slate-400 text-center py-8">아직 생성된 콘텐츠가 없습니다.</p>';
             return;
         }
-        
         contentHistory.forEach(item => {
             const historyItem = document.createElement('div');
             historyItem.className = 'bg-slate-700 p-4 rounded-lg border border-slate-600';
@@ -301,29 +311,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="text-xs text-slate-400">${item.timestamp}</span>
                     </div>
                     <div class="flex gap-1">
-                        <button onclick="useAsReference('${item.id}')" class="text-xs bg-sky-500 text-white px-2 py-1 rounded hover:bg-sky-600 transition">
-                            참조하기
-                        </button>
-                        <button onclick="copyHistoryItem('${item.id}')" class="text-xs bg-slate-600 text-slate-300 px-2 py-1 rounded hover:bg-slate-500 transition">
-                            복사
-                        </button>
+                        <button onclick="useAsReference('${item.id}')" class="text-xs bg-sky-500 text-white px-2 py-1 rounded hover:bg-sky-600 transition">참조하기</button>
+                        <button onclick="copyHistoryItem('${item.id}')" class="text-xs bg-slate-600 text-slate-300 px-2 py-1 rounded hover:bg-slate-500 transition">복사</button>
                     </div>
                 </div>
                 <div class="text-sm">
                     <div class="font-medium text-slate-200 mb-1">${item.title}</div>
                     <div class="text-slate-400 line-clamp-2">${item.body.substring(0, 100)}${item.body.length > 100 ? '...' : ''}</div>
-                    <div class="flex gap-2 mt-2 text-xs text-slate-500">
-                        <span>📂 ${item.category}</span>
-                        ${item.keyword ? `<span>🔍 ${item.keyword}</span>` : ''}
-                        <span>📏 ${item.length}</span>
-                    </div>
-                </div>
-            `;
+                </div>`;
             historyList.appendChild(historyItem);
         });
     }
 
-    // Global functions for history actions
     window.useAsReference = function(id) {
         const item = contentHistory.find(h => h.id == id);
         if (item) {
@@ -333,655 +332,110 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 키워드 추가 함수
-    window.addKeyword = function(keyword) {
-        const keywordInput = document.getElementById('keyword');
-        const currentKeywords = keywordInput.value.trim();
-        if (currentKeywords) {
-            keywordInput.value = currentKeywords + ', ' + keyword;
-        } else {
-            keywordInput.value = keyword;
-        }
-    };
-
     window.copyHistoryItem = function(id) {
         const item = contentHistory.find(h => h.id == id);
         if (item) {
             const fullText = item.mode === 'comment' ? item.body : `제목: ${item.title}\n\n${item.body}`;
-            navigator.clipboard.writeText(fullText).then(() => {
-                alert('클립보드에 복사되었습니다!');
-            });
+            navigator.clipboard.writeText(fullText).then(() => alert('클립보드에 복사되었습니다!'));
         }
     };
-
+    
     function loadStatistics() {
-        // 전체 통계
-        const totalPosts = contentHistory.filter(item => item.mode === 'post').length;
-        const totalComments = contentHistory.filter(item => item.mode === 'comment').length;
         const totalContent = contentHistory.length;
         const uniqueAuthors = [...new Set(contentHistory.map(item => item.author))].length;
+        document.getElementById('overallStats').innerHTML = `<div class="flex justify-between"><span class="text-slate-300">총 콘텐츠:</span><span class="text-emerald-400 font-bold">${totalContent}개</span></div><div class="flex justify-between"><span class="text-slate-300">참여 작성자:</span><span class="text-yellow-400">${uniqueAuthors}명</span></div>`;
         
-        document.getElementById('overallStats').innerHTML = `
-            <div class="flex justify-between">
-                <span class="text-slate-300">총 콘텐츠:</span>
-                <span class="text-emerald-400 font-bold">${totalContent}개</span>
-            </div>
-            <div class="flex justify-between">
-                <span class="text-slate-300">글:</span>
-                <span class="text-sky-400">${totalPosts}개</span>
-            </div>
-            <div class="flex justify-between">
-                <span class="text-slate-300">댓글:</span>
-                <span class="text-purple-400">${totalComments}개</span>
-            </div>
-            <div class="flex justify-between">
-                <span class="text-slate-300">참여 작성자:</span>
-                <span class="text-yellow-400">${uniqueAuthors}명</span>
-            </div>
-        `;
-
-        // 작성자별 통계
         const authorStats = {};
         contentHistory.forEach(item => {
-            if (!authorStats[item.author]) {
-                authorStats[item.author] = { posts: 0, comments: 0, total: 0 };
-            }
-            authorStats[item.author].total++;
-            if (item.mode === 'post') authorStats[item.author].posts++;
-            else authorStats[item.author].comments++;
+            authorStats[item.author] = (authorStats[item.author] || 0) + 1;
         });
+        document.getElementById('userStats').innerHTML = Object.entries(authorStats).sort((a, b) => b[1] - a[1]).map(([author, count]) => `<div class="flex justify-between items-center"><span class="text-slate-300">${author}</span><span class="text-emerald-400 font-bold">${count}개</span></div>`).join('') || '<p class="text-slate-400 text-sm">데이터가 없습니다.</p>';
 
-        const authorStatsHTML = Object.entries(authorStats)
-            .sort((a, b) => b[1].total - a[1].total)
-            .map(([author, stats]) => `
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-300">${author}</span>
-                    <div class="flex gap-2 text-xs">
-                        <span class="text-sky-400">${stats.posts}글</span>
-                        <span class="text-purple-400">${stats.comments}댓글</span>
-                        <span class="text-emerald-400 font-bold">${stats.total}총</span>
-                    </div>
-                </div>
-            `).join('');
-
-        document.getElementById('userStats').innerHTML = authorStatsHTML || '<p class="text-slate-400 text-sm">데이터가 없습니다.</p>';
-
-        // 카테고리별 통계
         const categoryStats = {};
         contentHistory.forEach(item => {
             categoryStats[item.category] = (categoryStats[item.category] || 0) + 1;
         });
-
-        const categoryStatsHTML = Object.entries(categoryStats)
-            .sort((a, b) => b[1] - a[1])
-            .map(([category, count]) => `
-                <div class="flex justify-between">
-                    <span class="text-slate-300">${category}</span>
-                    <span class="text-emerald-400 font-bold">${count}개</span>
-                </div>
-            `).join('');
-
-        document.getElementById('categoryStats').innerHTML = categoryStatsHTML || '<p class="text-slate-400 text-sm">데이터가 없습니다.</p>';
-
-        // 페르소나별 통계
+        document.getElementById('categoryStats').innerHTML = Object.entries(categoryStats).sort((a, b) => b[1] - a[1]).map(([category, count]) => `<div class="flex justify-between"><span class="text-slate-300">${category}</span><span class="text-emerald-400 font-bold">${count}개</span></div>`).join('') || '<p class="text-slate-400 text-sm">데이터가 없습니다.</p>';
+        
         const personaStats = {};
         contentHistory.forEach(item => {
             personaStats[item.persona] = (personaStats[item.persona] || 0) + 1;
         });
-
-        const personaStatsHTML = Object.entries(personaStats)
-            .sort((a, b) => b[1] - a[1])
-            .map(([persona, count]) => `
-                <div class="flex justify-between">
-                    <span class="text-slate-300">${persona}</span>
-                    <span class="text-emerald-400 font-bold">${count}개</span>
-                </div>
-            `).join('');
-
-        document.getElementById('personaStats').innerHTML = personaStatsHTML || '<p class="text-slate-400 text-sm">데이터가 없습니다.</p>';
-
-        // 최근 활동
-        const recentActivity = contentHistory.slice(0, 5).map(item => `
-            <div class="flex justify-between items-center text-sm">
-                <div class="flex items-center gap-2">
-                    <span class="text-emerald-400">${item.mode === 'post' ? '📝' : '💬'}</span>
-                    <span class="text-slate-300">${item.author}</span>
-                    <span class="text-slate-400">${item.persona}</span>
-                </div>
-                <span class="text-slate-500 text-xs">${item.timestamp}</span>
-            </div>
-        `).join('');
-
-        document.getElementById('recentActivity').innerHTML = recentActivity || '<p class="text-slate-400 text-sm">최근 활동이 없습니다.</p>';
-    }
-
-    function showApiKeyError() {
-        const output = document.getElementById('output');
-        output.innerHTML = `
-            <div class="h-full flex items-center justify-center text-red-400">
-                <div class="text-center">
-                    <div class="text-4xl mb-4">🔑</div>
-                    <h3 class="text-xl font-bold mb-2">API 키 설정 필요</h3>
-                    <p class="text-sm mb-4">config.js 파일에서 API_KEY를 설정해주세요.</p>
-                    <div class="bg-slate-800 p-4 rounded-lg text-left text-xs">
-                        <p class="mb-2">설정 방법:</p>
-                        <ol class="list-decimal list-inside space-y-1">
-                            <li>config.js 파일을 열어주세요</li>
-                            <li>API_KEY: "YOUR_API_KEY_HERE" 부분을 찾아주세요</li>
-                            <li>실제 Google Gemini API 키로 교체해주세요</li>
-                            <li>페이지를 새로고침해주세요</li>
-                        </ol>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    async function generateContent() {
-        generateBtn.disabled = true;
-        generateBtn.textContent = 'AI 생성 중...';
-        outputPlaceholder.classList.add('hidden');
-        outputResult.classList.add('hidden');
-        outputLoading.classList.remove('hidden');
-        copyBtn.disabled = true;
-
-        const selectedPersona = personaSelect.value;
-        const selectedScenario = scenarioSelect.value;
-        let selectedPostType = postTypeSelect.value;
-        const selectedCategory = categorySelect.value;
-        let selectedLength = postLengthSelect.value;
-        let selectedTones = Array.from(toneOptionsContainer.querySelectorAll('input:checked')).map(el => el.value);
-        let keyword = keywordInput.value.trim();
-        const includeAffiliation = affiliationCheckbox.checked;
-        const seoOptimize = document.getElementById('seoOptimize').checked;
-        const realisticDetails = document.getElementById('realisticDetails').checked;
-        const emotionalDepth = document.getElementById('emotionalDepth').checked;
-
-        const personaInfo = personaDetails[selectedPersona];
-
-        if (simpleMode) {
-            const postTypes = ['SOS형', '공유형', 'Q&A형'];
-            selectedPostType = postTypes[Math.floor(Math.random() * postTypes.length)];
-            const lengths = ['자동', '짧게', '보통', '길게'];
-            selectedLength = lengths[Math.floor(Math.random() * lengths.length)];
-            const tonePool = tones.map(t => t.name);
-            const shuffled = [...tonePool].sort(() => Math.random() - 0.5);
-            selectedTones = shuffled.slice(0, Math.floor(Math.random() * 3));
-            keyword = '';
-        }
-
-        // 랜덤 요소 선택
-        const randomWritingStyle = randomElements.writingStyles[Math.floor(Math.random() * randomElements.writingStyles.length)];
-        const randomEmotion = randomElements.emotionalExpressions[Math.floor(Math.random() * randomElements.emotionalExpressions.length)];
-        const randomQuestion = randomElements.questionStyles[Math.floor(Math.random() * randomElements.questionStyles.length)];
-        
-        // 카테고리별 톤앤매너 정보 가져오기
-        const categoryInfo = categoryToneMapping[selectedCategory] || {};
-        const categoryStyle = categoryInfo.style || "일반적인 학부모 커뮤니티 스타일";
-        const defaultTones = categoryInfo.defaultTones || [];
-        const avoidTones = categoryInfo.avoidTones || [];
-        
-        let systemPrompt = `당신은 대한민국 서울 대치동의 교육열 높은 학부모들이 이용하는 온라인 입시 정보 카페를 위한 콘텐츠를 생성하는 AI입니다. 실제 학부모가 쓴 것처럼 자연스럽고 현실감 있는 톤앤매너를 완벽하게 구현해야 합니다. 다음 페르소나의 역할에 100% 빙의하여 응답해주세요:\n\n**페르소나 프로필:**\n${personaInfo.description}\n\n**카테고리별 스타일 가이드:**\n${categoryStyle}\n\n**콘텐츠 생성 규칙:**\n1. 게시글의 경우, 제목과 본문을 "제목: [제목 내용]"과 "본문: [본문 내용]" 형식으로 명확히 구분하여 생성합니다.\n2. 댓글의 경우, "댓글: [댓글 내용]" 형식으로 생성합니다.\n3. 실제 커뮤니티처럼 이모티콘(😊, ㅠㅠ, 👍 등)을 자연스럽게 사용하고, 적절한 줄 바꿈으로 가독성을 높여주세요.\n4. 'KNS 자체 콘텐츠' 카테고리가 아닐 경우, KNS 학원이나 특정 프로그램을 굳이 언급하려 하지 말고, 학부모의 입장에서 순수하게 정보나 고민을 나누는 데 집중하세요.\n5. 사용자가 지정한 '글 길이'를 최대한 준수하여 콘텐츠를 생성하세요. '자동'일 경우 주제와 유형에 맞게 길이를 조절하세요.\n6. 글 내용에 구체적인 학교명이나 학원명이 필요할 경우, 사용자가 직접 수정할 수 있도록 '[OO고]', '[XX학원]'과 같은 대괄호 형식의 '빈칸'으로 남겨주세요.\n7. 매번 다른 스타일과 표현을 사용하여 천편일률적이지 않게 작성하세요.\n8. 개인적인 경험이나 구체적인 상황을 포함하여 현실감을 높이세요.\n9. 감정 표현을 다양하게 사용하고, 자연스러운 대화체를 유지하세요.\n10. 카테고리에 맞는 적절한 톤앤매너를 유지하면서도 자연스럽게 작성하세요.`;
-        
-        if (includeAffiliation) {
-             systemPrompt += `\n11. 글 서두에 'KNS O학년 재원생 엄마예요.' 와 같이, 현재 페르소나의 학년에 맞춰 자연스럽게 KNS 재원생임을 밝혀주세요.`;
-        }
-
-        // 품질 향상 옵션 적용
-        if (seoOptimize) {
-            systemPrompt += `\n12. SEO 최적화: 핵심 키워드를 자연스럽게 제목과 본문에 포함하여 검색 노출을 높이세요.`;
-        }
-        
-        if (realisticDetails) {
-            systemPrompt += `\n13. 현실적 세부사항: 구체적인 날짜, 시간, 장소, 성적, 학년, 학교명 등을 포함하여 더욱 현실감 있게 작성하세요.`;
-        }
-        
-        if (emotionalDepth) {
-            systemPrompt += `\n14. 감정적 깊이: 단순한 감정 표현이 아닌, 복합적이고 미묘한 감정 변화와 내적 갈등을 표현하세요.`;
-        }
-
-        let userQuery = '';
-
-        // 스타일 템플릿을 한 개 선택
-        const chosenTemplate = styleTemplates[Math.floor(Math.random() * styleTemplates.length)];
-        
-        if (currentMode === 'post') {
-            userQuery = `
-            다음 조건에 맞춰 글을 생성해주세요.
-            - **글 유형:** ${selectedPostType}
-            - **구체적인 상황:** ${selectedScenario}
-            - **콘텐츠 카테고리:** ${selectedCategory}
-            - **글 길이:** ${selectedLength}
-            - **핵심 키워드 (선택):** ${keyword || '지정되지 않음'}
-            - **감성/톤앤매너 (선택):** ${selectedTones.join(', ') || '지정되지 않음'}
-            - **스타일 템플릿:** ${chosenTemplate.name} — ${chosenTemplate.instruction}
-            
-            **카테고리별 톤앤매너 가이드:**
-            - 권장 톤앤매너: ${defaultTones.join(', ') || '자연스러운 학부모 톤앤매너'}
-            - 피해야 할 톤앤매너: ${avoidTones.join(', ') || '없음'}
-            
-            **추가 요구사항:**
-            - ${randomWritingStyle} 작성해주세요.
-            - "${randomEmotion}" 같은 감정을 자연스럽게 표현해주세요.
-            - 가능하면 "${randomQuestion}" 같은 질문을 포함해주세요.
-            - 반드시 '구체적인 상황'에 초점을 맞춰서, 페르소나의 핵심 고민과 감정이 잘 드러나도록 콘텐츠를 생성해야 합니다.
-            - 매번 다른 개인적인 경험이나 구체적인 상황을 만들어서 현실감을 높여주세요.
-            - 카테고리에 맞는 적절한 톤앤매너를 유지하면서도 자연스럽게 작성해주세요.
-            ${seoOptimize ? '- SEO 최적화: 핵심 키워드를 자연스럽게 포함하여 검색 노출을 높여주세요.' : ''}
-            ${realisticDetails ? '- 현실적 세부사항: 구체적인 날짜, 시간, 장소, 성적 등을 포함해주세요.' : ''}
-            ${emotionalDepth ? '- 감정적 깊이: 복합적이고 미묘한 감정 변화를 표현해주세요.' : ''}
-            `;
-        } else {
-            const referencePost = referencePostInput.value.trim();
-            if (!referencePost) {
-                displayError("댓글을 달고 싶은 기존 글의 내용을 입력해주세요.");
-                return;
-            }
-            
-            userQuery = `
-            다음 조건에 맞춰 댓글을 생성해주세요.
-            - **참조할 기존 글:** 
-            ${referencePost}
-            
-            - **구체적인 상황:** ${selectedScenario}
-            - **콘텐츠 카테고리:** ${selectedCategory}
-            - **글 길이:** ${selectedLength}
-            - **핵심 키워드 (선택):** ${keyword || '지정되지 않음'}
-            - **감성/톤앤매너 (선택):** ${selectedTones.join(', ') || '지정되지 않음'}
-            - **스타일 템플릿:** ${chosenTemplate.name} — ${chosenTemplate.instruction}
-            
-            **카테고리별 톤앤매너 가이드:**
-            - 권장 톤앤매너: ${defaultTones.join(', ') || '자연스러운 학부모 톤앤매너'}
-            - 피해야 할 톤앤매너: ${avoidTones.join(', ') || '없음'}
-            
-            **댓글 작성 요구사항:**
-            - 위의 기존 글에 대한 자연스러운 반응을 작성해주세요.
-            - ${randomWritingStyle} 작성해주세요.
-            - "${randomEmotion}" 같은 감정을 자연스럽게 표현해주세요.
-            - 기존 글의 내용과 관련된 개인적인 경험이나 의견을 포함해주세요.
-            - 공감, 조언, 질문, 경험담 등 다양한 형태의 댓글이 가능합니다.
-            - 카테고리에 맞는 적절한 톤앤매너를 유지하면서도 자연스럽게 작성해주세요.
-            ${seoOptimize ? '- SEO 최적화: 핵심 키워드를 자연스럽게 포함하여 검색 노출을 높여주세요.' : ''}
-            ${realisticDetails ? '- 현실적 세부사항: 구체적인 날짜, 시간, 장소, 성적 등을 포함해주세요.' : ''}
-            ${emotionalDepth ? '- 감정적 깊이: 복합적이고 미묘한 감정 변화를 표현해주세요.' : ''}
-            `;
-        }
-
-    try {
-        const apiUrl = `/.netlify/functions/generate`;
-        const generationConfig = {
-            temperature: simpleMode ? 1.1 : 0.9,
-            topP: 0.95,
-            topK: 40,
-            candidateCount: 1
-        };
-        const payload = {
-            contents: [{ parts: [{ text: userQuery }] }],
-            systemInstruction: {
-                parts: [{ text: systemPrompt }]
-            },
-            generationConfig
-        };    
-
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (response.status === 429) {
-            displayError("하루 무료 사용량을 모두 소진했습니다. 😥 내일 다시 시도해주세요!");
-            return; 
-        }
-
-        if (!response.ok) {
-            throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
-        }
-
-        const result = await response.json();
-        const candidate = result.candidates?.[0];
-            
-            if (candidate && candidate.content?.parts?.[0]?.text) {
-                const rawText = candidate.content.parts[0].text;
-                let titleText = '';
-                let bodyText = '';
-
-                if (rawText.includes("제목:") && rawText.includes("본문:")) {
-                    titleText = rawText.split("제목:")[1].split("본문:")[0].trim();
-                    bodyText = rawText.split("본문:")[1].trim();
-                } else if (rawText.includes("댓글:")) {
-                    titleText = `(댓글)`;
-                    bodyText = rawText.split("댓글:")[1].trim();
-                } else {
-                    titleText = "생성된 콘텐츠";
-                    bodyText = rawText;
-                }
-                
-                // 로컬 히스토리와의 간단 유사도 체크(3-그램 자카드)
-                const isTooSimilar = (text) => {
-                    const ngrams = (t) => {
-                        const words = t.replace(/\s+/g, ' ').trim().split(' ');
-                        const set = new Set();
-                        for (let i = 0; i < words.length - 2; i++) {
-                            set.add(`${words[i]} ${words[i+1]} ${words[i+2]}`);
-                        }
-                        return set;
-                    };
-                    const a = ngrams(text);
-                    for (const item of contentHistory) {
-                        const b = ngrams(item.body || '');
-                        let inter = 0;
-                        a.forEach(x => { if (b.has(x)) inter++; });
-                        const union = a.size + b.size - inter;
-                        const jaccard = union ? inter / union : 0;
-                        if (jaccard >= 0.75) return true;
-                    }
-                    return false;
-                };
-
-                if (isTooSimilar(bodyText)) {
-                    alert('이미 생성된 내용과 유사도가 높습니다. 옵션을 바꾸거나 다시 생성해보세요.');
-                }
-                // 서버 전역 dedupe 체크
-                try {
-                    const dupResp = await fetch('/.netlify/functions/nlp-dedupe', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'check', text: bodyText, persona: selectedPersona, category: selectedCategory })
-                    });
-                    const dup = await dupResp.json().catch(() => ({}));
-                    if (dup.similar) {
-                        alert('팀 전역에서 유사한 콘텐츠가 이미 존재합니다. 한 번 더 돌려보세요.');
-                    }
-                } catch {}
-
-                displayResult(selectedPersona, titleText, bodyText);
-                
-                // 히스토리에 저장
-                saveToHistory({ title: titleText, body: bodyText });
-
-            } else {
-                displayError("AI로부터 유효한 응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.");
-            }
-
-        } catch (error) {
-            console.error("콘텐츠 생성 중 오류 발생:", error);
-            displayError(`오류가 발생했습니다: ${error.message}`);
-        } finally {
-            generateBtn.disabled = false;
-            generateBtn.textContent = '🚀 콘텐츠 생성하기';
-            outputLoading.classList.add('hidden');
-        }
+        document.getElementById('personaStats').innerHTML = Object.entries(personaStats).sort((a, b) => b[1] - a[1]).map(([persona, count]) => `<div class="flex justify-between"><span class="text-slate-300">${persona}</span><span class="text-emerald-400 font-bold">${count}개</span></div>`).join('') || '<p class="text-slate-400 text-sm">데이터가 없습니다.</p>';
     }
     
-    function typeWriter(element, text, callback) {
-        let i = 0;
-        element.innerHTML = ''; // Clear previous content
-        const cursor = document.createElement('span');
-        cursor.className = 'blinking-cursor';
-        element.appendChild(cursor);
-
-        function type() {
-            if (i < text.length) {
-                element.insertBefore(document.createTextNode(text.charAt(i)), cursor);
-                i++;
-                setTimeout(type, 20);
-            } else {
-                cursor.remove();
-                if (callback) callback();
-            }
-        }
-        type();
-    }
-
-    function displayResult(persona, title, body) {
-        const personaInfo = personaDetails[persona];
-        
-        resultTitle.textContent = title;
-        resultPersonaIcon.textContent = personaInfo.icon;
-        resultPersonaName.textContent = persona;
-        resultPersonaName.className = `font-semibold ${personaInfo.color}`;
-        
-        typeWriter(resultBody, body, () => {
-            copyBtn.disabled = false;
-            naverPostBtn.disabled = false;
-        });
-        
-        outputResult.classList.remove('hidden');
-    }
-    async function startNaverLogin() {
-        try {
-            const resp = await fetch('/.netlify/functions/naver-auth-url');
-            if (!resp.ok) throw new Error('네이버 인증 URL 생성 실패');
-            const { url } = await resp.json();
-            window.location.href = url;
-        } catch (e) {
-            alert(e.message);
-        }
-    }
-
-    async function postToNaverCafe() {
-        try {
-            const cafeId = (cafeIdInput.value || '').trim();
-            const menuId = (menuIdInput.value || '').trim();
-            const title = resultTitle.textContent;
-            const body = resultBody.textContent;
-            if (!cafeId || !menuId) {
-                alert('카페 ID와 메뉴 ID를 입력해주세요.');
-                return;
-            }
-            naverPostBtn.disabled = true;
-            naverPostBtn.textContent = '업로드 중...';
-            const resp = await fetch('/.netlify/functions/naver-cafe-post', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cafeId, menuId, title, content: body })
-            });
-            const data = await resp.json().catch(() => ({}));
-            if (!resp.ok) {
-                throw new Error(data.error || '업로드 실패');
-            }
-            // 실제 응답에 따라 게시글 URL 추출 필요
-            lastPostedUrl = data.data?.result?.articleUrl || null;
-            if (lastPostedUrl) {
-                openPostedBtn.disabled = false;
-            }
-            // 팀 전역 커밋(중복 방지 히스토리에 기록)
-            try {
-                await fetch('/.netlify/functions/nlp-dedupe', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'commit', text: body, persona: personaSelect.value, category: categorySelect.value })
-                });
-            } catch {}
-            alert('카페에 게시가 완료되었습니다.');
-        } catch (e) {
-            alert(e.message);
-        } finally {
-            naverPostBtn.disabled = false;
-            naverPostBtn.textContent = '카페에 올리기';
-        }
-    }
-
-    function openPostedArticle() {
-        if (!lastPostedUrl) {
-            alert('게시된 글 URL이 없습니다.');
-            return;
-        }
-        window.open(lastPostedUrl, '_blank');
-    }
-
-    function displayError(message) {
-         resultTitle.textContent = "오류";
-         resultPersonaIcon.textContent = "⚠️";
-         resultPersonaName.textContent = "시스템";
-         resultPersonaName.className = `font-semibold text-red-400`;
-         resultBody.textContent = message;
-         outputResult.classList.remove('hidden');
-    }
-
-    function init() {
-        tones.forEach(tone => {
-            const div = document.createElement('div');
-            div.innerHTML = `
-                <input type="checkbox" id="${tone.id}" value="${tone.name}" class="hidden peer">
-                <label for="${tone.id}" class="block w-full text-center py-1.5 px-2 border border-slate-600 rounded-md cursor-pointer peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500 transition">
-                    ${tone.name}
-                </label>
-            `;
-            toneOptionsContainer.appendChild(div);
-        });
-        
-        personaSelect.addEventListener('change', updateScenarios);
-        updateScenarios();
-
-        // 카테고리 선택 시 카페/메뉴 자동 입력
-        categorySelect.addEventListener('change', () => {
-            try {
-                const mapping = (window.CONFIG && window.CONFIG.CATEGORY_TO_CAFE_MENU) || {};
-                const selected = categorySelect.value;
-                const target = mapping[selected];
-                if (target && (target.cafeId || target.menuId)) {
-                    if (target.cafeId) cafeIdInput.value = target.cafeId;
-                    if (target.menuId) menuIdInput.value = target.menuId;
-                }
-            } catch { /* noop */ }
-        });
-    }
-
-    // Event listeners
-    postModeBtn.addEventListener('click', () => switchMode('post'));
-    commentModeBtn.addEventListener('click', () => switchMode('comment'));
-    if (simpleModeToggle) {
-        simpleModeToggle.addEventListener('change', (e) => {
-            simpleMode = !!e.target.checked;
-            applySimpleModeUI();
-        });
-    }
-    if (randomizeBtn) {
-        randomizeBtn.addEventListener('click', () => {
-            const pick = (sel) => sel.options[Math.floor(Math.random() * sel.options.length)].value;
-            personaSelect.value = pick(personaSelect);
-            updateScenarios();
-            scenarioSelect.value = pick(scenarioSelect);
-            categorySelect.value = pick(categorySelect);
-            switchMode('post');
-            generateContent();
-        });
-    }
-    
-    historyBtn.addEventListener('click', () => {
-        loadHistory();
-        historyModal.classList.remove('hidden');
-    });
-    
-    statsBtn.addEventListener('click', () => {
-        loadStatistics();
-        statsModal.classList.remove('hidden');
-    });
-    
-    closeHistoryBtn.addEventListener('click', () => {
-        historyModal.classList.add('hidden');
-    });
-    
-    closeStatsBtn.addEventListener('click', () => {
-        statsModal.classList.add('hidden');
-    });
-    
-    // 모달 외부 클릭 시 닫기
-    historyModal.addEventListener('click', (e) => {
-        if (e.target === historyModal) {
-            historyModal.classList.add('hidden');
-        }
-    });
-    
-    statsModal.addEventListener('click', (e) => {
-        if (e.target === statsModal) {
-            statsModal.classList.add('hidden');
-        }
-    });
-
-    generateBtn.addEventListener('click', generateContent);
-
-    copyBtn.addEventListener('click', () => {
-        const title = resultTitle.textContent;
-        const body = resultBody.textContent;
-        const fullText = title === '(댓글)' ? body : `제목: ${title}\n\n${body}`;
-        
-        navigator.clipboard.writeText(fullText).then(() => {
-            copyBtn.textContent = '복사 완료!';
-            setTimeout(() => { copyBtn.textContent = '복사하기'; }, 2000);
-        }).catch(() => {
-            try {
-                const textArea = document.createElement('textarea');
-                textArea.value = fullText;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                copyBtn.textContent = '복사 완료!';
-                setTimeout(() => { copyBtn.textContent = '복사하기'; }, 2000);
-            } catch (e) {
-                 alert('클립보드 복사에 실패했습니다.');
-            }
-        });
-    });
-
-    // 네이버 연동 버튼
-    naverLoginBtn.addEventListener('click', startNaverLogin);
-    naverPostBtn.addEventListener('click', postToNaverCafe);
-    openPostedBtn.addEventListener('click', openPostedArticle);
-
     async function rewrite(type) {
         try {
             const persona = resultPersonaName.textContent;
             const title = resultTitle.textContent;
             const body = resultBody.textContent;
-            const prompt = type === 'hook'
-                ? `아래 글의 첫 문장(후킹 문장)만 더 강렬하고 자연스럽게 1문장으로 바꿔주세요. 같은 의미를 다른 표현으로:
-제목: ${title}
-본문: ${body}`
-                : `아래 글에서 무작위 한 문장을 선택해 같은 의미를 유지하되 표현을 바꿔 1문장으로 제시하세요. (원문 반환 X)
-제목: ${title}
-본문: ${body}`;
-
+            const prompt = type === 'hook' ? `아래 글의 첫 문장(후킹 문장)만 더 강렬하고 자연스럽게 1문장으로 바꿔주세요. 같은 의미를 다른 표현으로:\n제목: ${title}\n본문: ${body}` : `아래 글에서 무작위 한 문장을 선택해 같은 의미를 유지하되 표현을 바꿔 1문장으로 제시하세요. (원문 반환 X)\n제목: ${title}\n본문: ${body}`;
             const apiUrl = '/.netlify/functions/generate';
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                systemInstruction: { parts: [{ text: `당신은 ${persona} 페르소나의 말투와 톤을 유지합니다. 결과는 순수 텍스트 1문장만 반환하세요.` }] },
-                generationConfig: { temperature: 0.9 }
-            };
+            const payload = { contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: `당신은 ${persona} 페르소나의 말투와 톤을 유지합니다. 결과는 순수 텍스트 1문장만 반환하세요.` }] }, generationConfig: { temperature: 0.9 } };
             const resp = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             const data = await resp.json();
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
             if (!text) throw new Error('리라이트 실패');
-
             if (type === 'hook') {
                 const split = body.split('\n');
                 split[0] = text;
-                const newBody = split.join('\n');
-                resultBody.textContent = newBody;
+                resultBody.textContent = split.join('\n');
             } else {
-                // 단일 문장 치환: 가장 긴 문장을 교체
-                const sentences = body.split(/([.!?\n])/).reduce((acc, cur, idx, arr) => {
-                    if (!acc.length) acc.push(cur);
-                    else if (/[.!?\n]/.test(arr[idx - 1])) acc.push(cur);
-                    else acc[acc.length - 1] += cur;
-                    return acc;
-                }, []).filter(s => s.trim());
-                let maxIdx = 0;
-                for (let i = 1; i < sentences.length; i++) if (sentences[i].length > sentences[maxIdx].length) maxIdx = i;
-                sentences[maxIdx] = text;
-                resultBody.textContent = sentences.join(' ').replace(/\s+/g, ' ');
+                const sentences = body.split(/([.!?\n])/).reduce((acc, cur, idx, arr) => { if (!acc.length || /[.!?\n]/.test(arr[idx - 1])) acc.push(cur); else acc[acc.length - 1] += cur; return acc; }, []).filter(s => s.trim());
+                if (sentences.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * sentences.length);
+                    sentences[randomIndex] = text;
+                    resultBody.textContent = sentences.join('');
+                }
             }
         } catch (e) {
             alert(e.message || '리라이트 중 오류');
         }
     }
 
-    if (rewriteHookBtn) rewriteHookBtn.addEventListener('click', () => rewrite('hook'));
-    if (rewriteLineBtn) rewriteLineBtn.addEventListener('click', () => rewrite('line'));
+    function init() {
+        personaSelect.addEventListener('change', updateScenarios);
+        updateScenarios();
+        
+        userNameInput.value = localStorage.getItem('knsContentGeneratorUserName') || '';
+        userNameInput.addEventListener('change', () => {
+            localStorage.setItem('knsContentGeneratorUserName', userNameInput.value.trim());
+        });
+
+        toggleAdvanced.addEventListener('click', () => {
+            const isHidden = advancedControls.classList.toggle('hidden');
+            toggleAdvanced.textContent = isHidden ? '⚙️ 전문가 모드 열기' : '⚙️ 전문가 모드 닫기';
+        });
+
+        goalBtnConcern.addEventListener('click', () => generateGoalBasedContent('concern'));
+        goalBtnInfo.addEventListener('click', () => generateGoalBasedContent('info'));
+        goalBtnDaily.addEventListener('click', () => generateGoalBasedContent('daily'));
+        goalBtnComment.addEventListener('click', () => generateGoalBasedContent('comment'));
+        
+        generateBtn.addEventListener('click', generateContent);
+        postModeBtn.addEventListener('click', () => switchMode('post'));
+        commentModeBtn.addEventListener('click', () => switchMode('comment'));
+        
+        copyBtn.addEventListener('click', () => {
+            const title = resultTitle.textContent;
+            const body = resultBody.textContent;
+            const fullText = title === '(댓글)' ? body : `제목: ${title}\n\n${body}`;
+            navigator.clipboard.writeText(fullText).then(() => {
+                copyBtn.textContent = '복사 완료!';
+                setTimeout(() => { copyBtn.textContent = '복사하기'; }, 2000);
+            });
+        });
+
+        historyBtn.addEventListener('click', () => { loadHistory(); historyModal.classList.remove('hidden'); });
+        statsBtn.addEventListener('click', () => { loadStatistics(); statsModal.classList.remove('hidden'); });
+        closeHistoryBtn.addEventListener('click', () => { historyModal.classList.add('hidden'); });
+        closeStatsBtn.addEventListener('click', () => { statsModal.classList.add('hidden'); });
+        rewriteHookBtn.addEventListener('click', () => rewrite('hook'));
+        rewriteLineBtn.addEventListener('click', () => rewrite('line'));
+
+        // Naver Login/Post functions are not included here as they require backend setup.
+        // Make sure to add them if you have the corresponding Netlify functions.
+    }
 
     init();
 });
-

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KNS 카페 콘텐츠 생성기 ver2.5</title>
+    <title>KNS 카페 콘텐츠 생성기 v3.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -86,7 +86,7 @@
                     <span class="tooltiptext">AI가 생성하는 콘텐츠는 템플릿입니다. [OO고]와 같은 빈칸은 실제 내용에 맞게 수정하여 사용해주세요.</span>
                 </div>
             </h1>
-            <p class="text-slate-400 text-lg">ver 2.5 <span class="text-xs ml-1 px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full">Secure Edition</span></p>
+            <p class="text-slate-400 text-lg">ver 3.0 <span class="text-xs ml-1 px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full">Dynamic Persona</span></p>
             <p class="text-sm text-slate-500 mt-2">100명의 KNS 마케터를 위한 AI 기반 콘텐츠 제작 솔루션</p>
         </header>
 
@@ -94,20 +94,12 @@
         <main class="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Control Panel -->
             <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 flex flex-col">
-                <h2 class="text-2xl font-bold mb-6 text-emerald-400 border-b border-slate-700 pb-4">콘텐츠 조합하기 🧩</h2>
-                <div class="flex items-center justify-between mb-4">
-                    <label class="flex items-center gap-2 text-sm text-slate-300">
-                        <input id="simpleModeToggle" type="checkbox" class="w-4 h-4 text-emerald-500 bg-slate-700 border-slate-600 rounded focus:ring-emerald-500 focus:ring-2">
-                        간단 모드(추천)
-                    </label>
-                    <button id="randomizeBtn" class="text-sm bg-slate-700 text-slate-300 py-1 px-3 rounded hover:bg-slate-600 transition">🎰 한 번 쓱- 돌리기</button>
-                </div>
-                
                 <div class="space-y-6 flex-grow">
                     <!-- 1. Persona Selection -->
                     <div>
-                        <label for="persona" class="block text-sm font-medium text-slate-300 mb-2">1. 페르소나 선택</label>
-                        <select id="persona" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                        <label for="persona" class="block text-lg font-bold text-slate-300 mb-2">1. 페르소나 선택 (누가?)</label>
+                        <p class="text-sm text-slate-400 mb-3">담당 학년에 맞는 엄마를 선택해주세요.</p>
+                        <select id="persona" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2.5 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition text-base">
                             <option value="영재반 준비맘">영재반 준비맘 (초2~4)</option>
                             <option value="특목·자사고 준비맘">특목·자사고 준비맘 (초5~6)</option>
                             <option value="자유학년제 전략맘">자유학년제 전략맘 (중1)</option>
@@ -116,17 +108,46 @@
                         </select>
                     </div>
 
-                    <!-- NEW: Scenario Setting -->
-                    <div>
-                        <label for="scenario" class="block text-sm font-medium text-slate-300 mb-2">2. 상황 설정</label>
-                        <select id="scenario" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
-                            <!-- Options will be populated by JS -->
-                        </select>
+                    <!-- 2. Goal Selection -->
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-emerald-500/30">
+                        <h3 class="text-lg font-bold text-emerald-400 mb-3">2. 글 목표 선택 (무엇을?)</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <button id="goalBtnConcern" class="text-left p-3 bg-slate-700 hover:bg-slate-600 rounded-lg transition">
+                                <span class="text-xl">🤔</span>
+                                <span class="font-semibold block mt-1">고민/질문 있어요</span>
+                                <p class="text-xs text-slate-400">학습, 진로, 관계에 대한 고민을 나눠요.</p>
+                            </button>
+                            <button id="goalBtnInfo" class="text-left p-3 bg-slate-700 hover:bg-slate-600 rounded-lg transition">
+                                <span class="text-xl">💡</span>
+                                <span class="font-semibold block mt-1">유용한 정보 공유</span>
+                                <p class="text-xs text-slate-400">KNS 소식, 입시 정보를 공유해요.</p>
+                            </button>
+                            <button id="goalBtnDaily" class="text-left p-3 bg-slate-700 hover:bg-slate-600 rounded-lg transition">
+                                <span class="text-xl">☀️</span>
+                                <span class="font-semibold block mt-1">가벼운 일상/유머</span>
+                                <p class="text-xs text-slate-400">소소한 이야기로 친목을 다져요.</p>
+                            </button>
+                            <button id="goalBtnComment" class="text-left p-3 bg-slate-700 hover:bg-slate-600 rounded-lg transition">
+                                <span class="text-xl">💬</span>
+                                <span class="font-semibold block mt-1">자연스러운 댓글 달기</span>
+                                 <p class="text-xs text-slate-400">기존 글에 공감과 의견을 더해요.</p>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- 3. Content Type Selection -->
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">3. 콘텐츠 유형 선택</label>
+                    <!-- Advanced Controls (Hidden by default) -->
+                    <button id="toggleAdvanced" class="w-full text-sm text-slate-400 hover:text-white py-2 bg-slate-700/50 rounded-lg">⚙️ 전문가 모드 열기</button>
+                    <div id="advancedControls" class="hidden space-y-6 pt-4 border-t border-slate-700">
+                        <h2 class="text-xl font-bold text-slate-400">상세 설정 (선택)</h2>
+                        <!-- Scenario Setting -->
+                        <div>
+                            <label for="scenario" class="block text-sm font-medium text-slate-300 mb-2">상황 설정</label>
+                            <select id="scenario" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                                <!-- Options will be populated by JS -->
+                            </select>
+                        </div>
+
+                        <!-- Content Type Selection -->
                         <div class="grid grid-cols-2 gap-2">
                             <button id="postModeBtn" class="bg-emerald-500 text-white py-2 px-4 rounded-lg font-medium transition hover:bg-emerald-600">
                                 📝 글 작성
@@ -135,85 +156,45 @@
                                 💬 댓글 작성
                             </button>
                         </div>
-                    </div>
 
-                    <!-- Post Type Selection (for 글 작성 모드) -->
-                    <div id="postTypeSection">
-                        <label for="postType" class="block text-sm font-medium text-slate-300 mb-2">4. 글 유형 선택</label>
-                        <select id="postType" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
-                            <option value="SOS형">SOS형 (고민 토로/질문)</option>
-                            <option value="공유형">공유형 (정보/경험담)</option>
-                            <option value="Q&A형">Q&A형 (단순 문의)</option>
-                        </select>
-                    </div>
-
-                    <!-- Reference Post Input (for 댓글 작성 모드) -->
-                    <div id="referencePostSection" class="hidden">
-                        <label for="referencePost" class="block text-sm font-medium text-slate-300 mb-2">4. 참조할 글 내용</label>
-                        <textarea id="referencePost" rows="4" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition resize-none" placeholder="댓글을 달고 싶은 기존 글의 제목과 내용을 여기에 입력하세요..."></textarea>
-                        <p class="text-xs text-slate-400 mt-1">💡 팁: 카페에서 복사한 글을 붙여넣거나, 직접 작성한 글을 입력하세요.</p>
-                    </div>
-
-                    <!-- 5. Category Selection -->
-                    <div>
-                        <label for="category" class="block text-sm font-medium text-slate-300 mb-2">5. 콘텐츠 카테고리 선택</label>
-                        <select id="category" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
-                            <option value="KNS 자체 콘텐츠">KNS 자체 콘텐츠 (수단비/앤솔로지)</option>
-                            <option value="학습법/공부 습관">학습법 / 공부 습관</option>
-                            <option value="학교 정보/입시 전략">학교 정보 / 입시 전략</option>
-                            <option value="자녀 관계/멘탈 관리">자녀 관계 / 멘탈 관리</option>
-                            <option value="학원 생활/시스템 문의">학원 생활 / 시스템 문의</option>
-                            <option value="일상/유머">일상 / 유머</option>
-                        </select>
-                    </div>
-                    
-                    <!-- 6. Length Selection -->
-                    <div>
-                        <label for="postLength" class="block text-sm font-medium text-slate-300 mb-2">6. 글 길이 선택</label>
-                        <select id="postLength" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
-                            <option value="자동">자동 (AI가 판단)</option>
-                            <option value="짧게">짧게 (1~3줄)</option>
-                            <option value="보통">보통 (4~10줄)</option>
-                            <option value="길게">길게 (10줄 이상)</option>
-                        </select>
-                    </div>
-
-                    <!-- 7. Tone Selection -->
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">7. 감성 / 톤앤매너 추가 (복수선택 가능)</label>
-                        <div id="toneOptions" class="grid grid-cols-3 sm:grid-cols-4 gap-2 text-sm">
+                        <!-- Post Type Selection (for 글 작성 모드) -->
+                        <div id="postTypeSection">
+                            <label for="postType" class="block text-sm font-medium text-slate-300 mb-2">글 유형 선택</label>
+                            <select id="postType" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                                <option value="SOS형">SOS형 (고민 토로/질문)</option>
+                                <option value="공유형">공유형 (정보/경험담)</option>
+                                <option value="Q&A형">Q&A형 (단순 문의)</option>
+                            </select>
                         </div>
-                    </div>
 
-                    <!-- 8. Keyword Input -->
-                    <div>
-                        <label for="keyword" class="block text-sm font-medium text-slate-300 mb-2">8. 핵심 키워드 입력 (SEO 최적화)</label>
-                        <input type="text" id="keyword" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition" placeholder="예: 중간고사, 겨울방학, 외고 자소서">
-                        <div class="mt-2 flex flex-wrap gap-1">
-                            <button type="button" onclick="addKeyword('중간고사')" class="text-xs bg-slate-600 text-slate-300 px-2 py-1 rounded hover:bg-slate-500 transition">중간고사</button>
-                            <button type="button" onclick="addKeyword('기말고사')" class="text-xs bg-slate-600 text-slate-300 px-2 py-1 rounded hover:bg-slate-500 transition">기말고사</button>
-                            <button type="button" onclick="addKeyword('입시')" class="text-xs bg-slate-600 text-slate-300 px-2 py-1 rounded hover:bg-slate-500 transition">입시</button>
-                            <button type="button" onclick="addKeyword('자소서')" class="text-xs bg-slate-600 text-slate-300 px-2 py-1 rounded hover:bg-slate-500 transition">자소서</button>
-                            <button type="button" onclick="addKeyword('면접')" class="text-xs bg-slate-600 text-slate-300 px-2 py-1 rounded hover:bg-slate-500 transition">면접</button>
+                        <!-- Reference Post Input (for 댓글 작성 모드) -->
+                        <div id="referencePostSection" class="hidden">
+                            <label for="referencePost" class="block text-sm font-medium text-slate-300 mb-2">참조할 글 내용</label>
+                            <textarea id="referencePost" rows="4" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition resize-none" placeholder="댓글을 달고 싶은 기존 글의 제목과 내용을 여기에 입력하세요..."></textarea>
                         </div>
-                    </div>
 
-                    <!-- 9. SEO & Quality Options -->
-                    <div class="pt-4 border-t border-slate-700/50">
-                        <label class="block text-sm font-medium text-slate-300 mb-2">9. 품질 향상 옵션</label>
-                        <div class="space-y-2">
-                            <label class="flex items-center space-x-3 cursor-pointer">
-                                <input type="checkbox" id="seoOptimize" class="w-4 h-4 text-emerald-500 bg-slate-700 border-slate-600 rounded focus:ring-emerald-500 focus:ring-2" checked>
-                                <span class="text-sm text-slate-300">🔍 SEO 최적화 (검색 노출 향상)</span>
-                            </label>
-                            <label class="flex items-center space-x-3 cursor-pointer">
-                                <input type="checkbox" id="realisticDetails" class="w-4 h-4 text-emerald-500 bg-slate-700 border-slate-600 rounded focus:ring-emerald-500 focus:ring-2" checked>
-                                <span class="text-sm text-slate-300">🎯 현실적 세부사항 추가</span>
-                            </label>
-                            <label class="flex items-center space-x-3 cursor-pointer">
-                                <input type="checkbox" id="emotionalDepth" class="w-4 h-4 text-emerald-500 bg-slate-700 border-slate-600 rounded focus:ring-emerald-500 focus:ring-2" checked>
-                                <span class="text-sm text-slate-300">💝 감정적 깊이 강화</span>
-                            </label>
+                        <!-- Category Selection -->
+                        <div>
+                            <label for="category" class="block text-sm font-medium text-slate-300 mb-2">콘텐츠 카테고리 선택</label>
+                            <select id="category" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                                <option value="KNS 자체 콘텐츠">KNS 자체 콘텐츠 (수단비/앤솔로지)</option>
+                                <option value="학습법/공부 습관">학습법 / 공부 습관</option>
+                                <option value="학교 정보/입시 전략">학교 정보 / 입시 전략</option>
+                                <option value="자녀 관계/멘탈 관리">자녀 관계 / 멘탈 관리</option>
+                                <option value="학원 생활/시스템 문의">학원 생활 / 시스템 문의</option>
+                                <option value="일상/유머">일상 / 유머</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Length Selection -->
+                        <div>
+                            <label for="postLength" class="block text-sm font-medium text-slate-300 mb-2">글 길이 선택</label>
+                            <select id="postLength" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                                <option value="자동">자동 (AI가 판단)</option>
+                                <option value="짧게">짧게 (1~3줄)</option>
+                                <option value="보통">보통 (4~10줄)</option>
+                                <option value="길게">길게 (10줄 이상)</option>
+                            </select>
                         </div>
                     </div>
 
@@ -222,20 +203,14 @@
                         <label for="userName" class="block text-sm font-medium text-slate-300 mb-2">작성자 정보 (팀 관리용)</label>
                         <input type="text" id="userName" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition text-sm" placeholder="예: 김마케터, 이강사, 박팀장">
                     </div>
-
-                    <!-- Affiliation Checkbox -->
-                    <div class="pt-4">
-                        <label for="includeAffiliation" class="flex items-center space-x-3 cursor-pointer">
-                            <input type="checkbox" id="includeAffiliation" class="w-4 h-4 text-emerald-500 bg-slate-700 border-slate-600 rounded focus:ring-emerald-500 focus:ring-2">
-                            <span class="text-sm font-medium text-slate-300">KNS 재원생 소속감 표시 (선택)</span>
-                        </label>
-                    </div>
                 </div>
 
-                <!-- Generate Button -->
-                <button id="generateBtn" class="w-full mt-8 bg-gradient-to-r from-sky-500 to-emerald-500 text-white font-bold py-3 px-4 rounded-lg hover:from-sky-600 hover:to-emerald-600 transition-all duration-300 shadow-lg hover:shadow-emerald-500/50 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-wait">
-                    🚀 콘텐츠 생성하기
-                </button>
+                <!-- Generate Button Placeholder, to be replaced by goal buttons in simple mode -->
+                <div id="generateBtnContainer" class="mt-8">
+                     <button id="generateBtn" class="w-full bg-gradient-to-r from-sky-500 to-emerald-500 text-white font-bold py-3 px-4 rounded-lg hover:from-sky-600 hover:to-emerald-600 transition-all duration-300 shadow-lg hover:shadow-emerald-500/50 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-wait">
+                        🚀 콘텐츠 생성하기
+                    </button>
+                </div>
             </div>
 
             <!-- Output Area -->
@@ -252,15 +227,6 @@
                         <button id="copyBtn" class="bg-slate-700 text-sm text-slate-300 py-1 px-3 rounded-md hover:bg-slate-600 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                             복사하기
                         </button>
-                        <button id="naverLoginBtn" class="bg-emerald-600 text-sm text-white py-1 px-3 rounded-md hover:bg-emerald-500 transition">
-                            네이버 로그인
-                        </button>
-                        <button id="naverPostBtn" class="bg-sky-600 text-sm text-white py-1 px-3 rounded-md hover:bg-sky-500 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                            카페에 올리기
-                        </button>
-                        <button id="openPostedBtn" class="bg-slate-700 text-sm text-slate-300 py-1 px-3 rounded-md hover:bg-slate-600 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                            글 열기(댓글)
-                        </button>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2 mb-4">
@@ -269,14 +235,18 @@
                 </div>
                 <div id="output" class="flex-grow bg-slate-900/50 p-4 rounded-lg text-slate-300 whitespace-pre-wrap overflow-y-auto leading-relaxed">
                     <div id="placeholder" class="h-full flex items-center justify-center text-slate-500">
-                        <p>좌측 옵션을 선택하고 버튼을 누르면<br>AI가 진짜보다 더 진짜 같은 카페 콘텐츠를 생성합니다!</p>
+                        <p class="text-center">
+                            <span class="text-lg font-semibold">1. 페르소나를 선택</span>하고, <br>
+                            <span class="text-lg font-semibold">2. 글의 목표 버튼</span>을 누르면<br>
+                            AI가 매번 새로운 컨셉의 콘텐츠를 생성합니다!
+                        </p>
                     </div>
                     <div id="loading" class="hidden h-full flex items-center justify-center text-slate-500">
                         <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-emerald-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <p>AI가 페르소나에 빙의하는 중...</p>
+                        <p>AI가 새로운 페르소나에 빙의하는 중...</p>
                     </div>
                     <div id="result" class="hidden fade-in">
                         <h3 id="resultTitle" class="text-lg font-bold text-sky-300 mb-4"></h3>
@@ -291,79 +261,26 @@
                         </div>
                     </div>
                 </div>
+                 <div class="flex gap-2 mt-4">
+                    <button id="naverLoginBtn" class="flex-1 bg-emerald-600 text-sm text-white py-2 px-3 rounded-md hover:bg-emerald-500 transition">
+                        네이버 로그인
+                    </button>
+                    <button id="naverPostBtn" class="flex-1 bg-sky-600 text-sm text-white py-2 px-3 rounded-md hover:bg-sky-500 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        카페에 올리기
+                    </button>
+                    <button id="openPostedBtn" class="flex-1 bg-slate-700 text-sm text-slate-300 py-2 px-3 rounded-md hover:bg-slate-600 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        게시글 확인
+                    </button>
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- History Modal -->
-    <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 w-full max-w-4xl max-h-[80vh] flex flex-col">
-            <div class="flex justify-between items-center p-6 border-b border-slate-700">
-                <h3 class="text-2xl font-bold text-sky-400">📚 생성된 콘텐츠 히스토리</h3>
-                <button id="closeHistoryBtn" class="text-slate-400 hover:text-white text-2xl">&times;</button>
-            </div>
-            <div id="historyContent" class="flex-1 overflow-y-auto p-6">
-                <div id="historyList" class="space-y-4">
-                    <!-- History items will be populated here -->
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Modals (History, Statistics) -->
+    <!-- ... (Modal HTML is unchanged, so it is omitted for brevity) ... -->
+    <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4"> <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 w-full max-w-4xl max-h-[80vh] flex flex-col"> <div class="flex justify-between items-center p-6 border-b border-slate-700"> <h3 class="text-2xl font-bold text-sky-400">📚 생성된 콘텐츠 히스토리</h3> <button id="closeHistoryBtn" class="text-slate-400 hover:text-white text-2xl">&times;</button> </div> <div id="historyContent" class="flex-1 overflow-y-auto p-6"> <div id="historyList" class="space-y-4"></div> </div> </div> </div>
+    <div id="statsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4"> <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 w-full max-w-5xl max-h-[80vh] flex flex-col"> <div class="flex justify-between items-center p-6 border-b border-slate-700"> <h3 class="text-2xl font-bold text-sky-400">📊 콘텐츠 생성 통계</h3> <button id="closeStatsBtn" class="text-slate-400 hover:text-white text-2xl">&times;</button> </div> <div id="statsContent" class="flex-1 overflow-y-auto p-6"> <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> <div class="bg-slate-700 p-4 rounded-lg"> <h4 class="text-lg font-bold text-emerald-400 mb-4">📈 전체 통계</h4> <div id="overallStats" class="space-y-2"></div> </div> <div class="bg-slate-700 p-4 rounded-lg"> <h4 class="text-lg font-bold text-emerald-400 mb-4">👥 작성자별 통계</h4> <div id="userStats" class="space-y-2"></div> </div> <div class="bg-slate-700 p-4 rounded-lg"> <h4 class="text-lg font-bold text-emerald-400 mb-4">📂 카테고리별 통계</h4> <div id="categoryStats" class="space-y-2"></div> </div> <div class="bg-slate-700 p-4 rounded-lg"> <h4 class="text-lg font-bold text-emerald-400 mb-4">🎭 페르소나별 통계</h4> <div id="personaStats" class="space-y-2"></div> </div> </div> <div class="mt-6 bg-slate-700 p-4 rounded-lg"> <h4 class="text-lg font-bold text-emerald-400 mb-4">🕒 최근 활동</h4> <div id="recentActivity" class="space-y-2"></div> </div> </div> </div> </div>
 
-    <!-- Statistics Modal -->
-    <div id="statsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 w-full max-w-5xl max-h-[80vh] flex flex-col">
-            <div class="flex justify-between items-center p-6 border-b border-slate-700">
-                <h3 class="text-2xl font-bold text-sky-400">📊 콘텐츠 생성 통계</h3>
-                <button id="closeStatsBtn" class="text-slate-400 hover:text-white text-2xl">&times;</button>
-            </div>
-            <div id="statsContent" class="flex-1 overflow-y-auto p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Overall Stats -->
-                    <div class="bg-slate-700 p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-emerald-400 mb-4">📈 전체 통계</h4>
-                        <div id="overallStats" class="space-y-2">
-                            <!-- Overall stats will be populated here -->
-                        </div>
-                    </div>
-                    
-                    <!-- User Stats -->
-                    <div class="bg-slate-700 p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-emerald-400 mb-4">👥 작성자별 통계</h4>
-                        <div id="userStats" class="space-y-2">
-                            <!-- User stats will be populated here -->
-                        </div>
-                    </div>
-                    
-                    <!-- Category Stats -->
-                    <div class="bg-slate-700 p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-emerald-400 mb-4">📂 카테고리별 통계</h4>
-                        <div id="categoryStats" class="space-y-2">
-                            <!-- Category stats will be populated here -->
-                        </div>
-                    </div>
-                    
-                    <!-- Persona Stats -->
-                    <div class="bg-slate-700 p-4 rounded-lg">
-                        <h4 class="text-lg font-bold text-emerald-400 mb-4">🎭 페르소나별 통계</h4>
-                        <div id="personaStats" class="space-y-2">
-                            <!-- Persona stats will be populated here -->
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Recent Activity -->
-                <div class="mt-6 bg-slate-700 p-4 rounded-lg">
-                    <h4 class="text-lg font-bold text-emerald-400 mb-4">🕒 최근 활동</h4>
-                    <div id="recentActivity" class="space-y-2">
-                        <!-- Recent activity will be populated here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 외부 JavaScript 파일 로드 -->
     <script src="config.js"></script>
     <script src="app.js"></script>
 </body>
