@@ -41,15 +41,20 @@
             border-color: #34d399 !important;
             transform: scale(1.01);
         }
+        /* 도움말 모달 스타일 */
+        #helpModal ul { list-style-position: inside; }
+        #helpModal li { margin-bottom: 0.5rem; }
+        #helpModal strong { color: #60a5fa; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-200 antialiased">
 
     <div class="container mx-auto p-4 md:p-8 min-h-screen flex flex-col">
         <!-- Header -->
-        <header class="text-center mb-8 md:mb-12">
+        <header class="text-center mb-8 md:mb-12 relative">
             <h1 class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">KNS 카페 콘텐츠 생성기</h1>
-            <p class="text-slate-400 text-lg">OBT <span class="text-xs ml-1 px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full">ft. Gemini</span></p>
+            <p class="text-slate-400 text-lg">OBT <span class="text-xs ml-1 px-2 py-0.5 bg-sky-500/20 text-sky-400 rounded-full">w. Gemini</span></p>
+            <button id="helpBtn" class="absolute top-0 right-0 bg-slate-700 text-sm py-1 px-3 rounded-md hover:bg-slate-600">❔ 도움말</button>
         </header>
 
         <!-- Main Content -->
@@ -207,6 +212,44 @@
     <!-- Modals -->
     <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4"> <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 w-full max-w-4xl max-h-[80vh] flex flex-col"> <div class="flex justify-between items-center p-6 border-b border-slate-700"> <h3 class="text-2xl font-bold text-sky-400">📚 생성된 콘텐츠 히스토리</h3> <button id="closeHistoryBtn" class="text-slate-400 hover:text-white text-2xl">&times;</button> </div> <div id="historyContent" class="flex-1 overflow-y-auto p-6"> <div id="historyList" class="space-y-4"></div> </div> </div> </div>
     <div id="statsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4"> <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 w-full max-w-5xl max-h-[80vh] flex flex-col"> <div class="flex justify-between items-center p-6 border-b border-slate-700"> <h3 class="text-2xl font-bold text-sky-400">📊 콘텐츠 생성 통계</h3> <button id="closeStatsBtn" class="text-slate-400 hover:text-white text-2xl">&times;</button> </div> <div id="statsContent" class="flex-1 overflow-y-auto p-6"> <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> <div class="bg-slate-700 p-4 rounded-lg"> <h4 class="text-lg font-bold text-emerald-400 mb-4">📈 전체 통계</h4> <div id="overallStats" class="space-y-2"></div> </div> <div class="bg-slate-700 p-4 rounded-lg"> <h4 class="text-lg font-bold text-emerald-400 mb-4">👥 작성자별 통계</h4> <div id="userStats" class="space-y-2"></div> </div> <div class="bg-slate-700 p-4 rounded-lg"> <h4 class="text-lg font-bold text-emerald-400 mb-4">📂 카테고리별 통계</h4> <div id="categoryStats" class="space-y-2"></div> </div> <div class="bg-slate-700 p-4 rounded-lg"> <h4 class="text-lg font-bold text-emerald-400 mb-4">🎭 페르소나별 통계</h4> <div id="personaStats" class="space-y-2"></div> </div> </div> <div class="mt-6 bg-slate-700 p-4 rounded-lg"> <h4 class="text-lg font-bold text-emerald-400 mb-4">🕒 최근 활동</h4> <div id="recentActivity" class="space-y-2"></div> </div> </div> </div> </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 w-full max-w-4xl max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center p-6 border-b border-slate-700">
+                <h3 class="text-2xl font-bold text-sky-400">👩‍🏫 KNS 카페 콘텐츠 생성기 사용 설명서</h3>
+                <button id="closeHelpBtn" class="text-slate-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6 text-slate-300 leading-relaxed space-y-6">
+                <div>
+                    <h4 class="text-xl font-bold text-emerald-400 mb-2">🤔 이 툴은 무엇인가요?</h4>
+                    <p>KNS 네이버 카페의 게시글과 댓글을 AI를 통해 쉽고 빠르게 만들어 볼 수 있는 도구입니다. 학부모님 같은 느낌의 콘텐츠를 클릭 몇 번만으로 생성할 수 있어요!</p>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold text-emerald-400 mb-2">🚀 퀵 스타트: 단 2번의 클릭으로!</h4>
+                    <ol class="list-decimal list-inside space-y-2">
+                        <li><strong>페르소나 선택:</strong> 글을 쓸 학부모님의 학년을 선택하세요.</li>
+                        <li><strong>글 목표 선택:</strong> 작성하고 싶은 글(고민/질문, 정보 공유 등) 버튼을 누르세요.</li>
+                        <li><strong>끝!</strong> 잠시 기다리면 오른쪽에 AI가 작성한 글이 짠! 하고 나타납니다.</li>
+                    </ol>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold text-emerald-400 mb-2">✨ 주요 기능 완전 정복!</h4>
+                    <ul class="space-y-3">
+                        <li><strong>랜덤 닉네임:</strong> 접속 시 '익명의 쿼카' 같은 닉네임이 자동 부여돼요. <strong>[다른 닉네임 🔄]</strong> 버튼으로 변경도 가능! 이 닉네임으로 히스토리와 통계가 기록됩니다.</li>
+                        <li><strong>댓글 작성을 위한 고급 기능(OCR):</strong> 원본 글을 캡처해서 <strong>붙여넣기(Ctrl+V)</strong>하거나 <strong>드래그 앤 드롭</strong> 해보세요. AI가 이미지 속 글자를 자동으로 입력해줍니다.</li>
+                        <li><strong>콘텐츠 수정 및 재활용:</strong> AI가 만든 글은 결과 창에서 바로 수정할 수 있고, <strong>[훅 바꾸기]</strong>, <strong>[한 줄 바꾸기]</strong> 버튼으로 부분 재작성도 가능해요.</li>
+                        <li><strong>똑똑한 팀 기능:</strong> <strong>[📚 히스토리]</strong>에서 과거 작업물을 보거나, <strong>[📊 통계]</strong>에서 팀의 작업 현황을 한눈에 파악할 수 있습니다.</li>
+                    </ul>
+                </div>
+                 <div>
+                    <h4 class="text-xl font-bold text-emerald-400 mb-2">꿀팁 & FAQ</h4>
+                     <p><strong>Q. '전문가 모드'는 뭔가요?</strong><br> A. 글의 길이, 카테고리 등을 더 세밀하게 설정하고 싶을 때 사용해요. 하지만 대부분의 경우 '글 목표 선택' 버튼만으로도 충분합니다!</p>
+                     <p class="mt-2"><strong>Q. 제가 만든 글은 어디에 저장되나요?</strong><br> A. 모든 기록은 개인 컴퓨터의 브라우저에만 저장됩니다. 다른 사람과 공유되지 않으니 안심하고 사용하세요.</p>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script src="config.js"></script>
     <script src="app.js"></script>

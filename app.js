@@ -1,4 +1,4 @@
-// KNS 카페 콘텐츠 생성기 v4.1 - Paste & Drag-and-Drop OCR
+// KNS 카페 콘텐츠 생성기 v4.2 - Help Modal
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.validateApiKey !== 'function') {
       window.validateApiKey = function() { return true; };
@@ -41,10 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const referencePostInput = document.getElementById('referencePost');
     const historyBtn = document.getElementById('historyBtn');
     const statsBtn = document.getElementById('statsBtn');
+    const helpBtn = document.getElementById('helpBtn'); // 도움말 버튼
     const historyModal = document.getElementById('historyModal');
     const statsModal = document.getElementById('statsModal');
+    const helpModal = document.getElementById('helpModal'); // 도움말 모달
     const closeHistoryBtn = document.getElementById('closeHistoryBtn');
     const closeStatsBtn = document.getElementById('closeStatsBtn');
+    const closeHelpBtn = document.getElementById('closeHelpBtn'); // 도움말 닫기 버튼
     const historyList = document.getElementById('historyList');
     const ocrUploadBtn = document.getElementById('ocrUploadBtn');
     const ocrImageUpload = document.getElementById('ocrImageUpload');
@@ -59,14 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function generateRandomName() {
         const adj = nameAdjectives[Math.floor(Math.random() * nameAdjectives.length)];
         const noun = nameNouns[Math.floor(Math.random() * nameNouns.length)];
-        const randomNumber = Math.floor(Math.random() * 900) + 100;
-        return `${adj} ${noun}${randomNumber}`;
+        return `${adj} ${noun}`;
     }
     
-    /**
-     * 이미지 파일로부터 텍스트를 추출하는 OCR 처리 함수
-     * @param {File} file - 처리할 이미지 파일
-     */
     async function processImageFile(file) {
         if (!file || !file.type.startsWith('image/')) {
             ocrStatus.textContent = '⚠️ 이미지 파일만 업로드할 수 있어요.';
@@ -80,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const worker = await Tesseract.createWorker('kor', 1, {
-                logger: m => console.log(m) // 개발 중 로그 확인용
+                logger: m => console.log(m)
             });
             const { data: { text } } = await worker.recognize(file);
             await worker.terminate();
@@ -94,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             referencePostInput.disabled = false;
             ocrUploadBtn.disabled = false;
-            ocrImageUpload.value = ''; // input 값 초기화
+            ocrImageUpload.value = '';
             setTimeout(() => { ocrStatus.textContent = ''; }, 3000);
         }
     }
@@ -551,7 +549,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if(file) processImageFile(file);
         });
         
-        // 붙여넣기 이벤트
         referencePostInput.addEventListener('paste', (event) => {
             const items = (event.clipboardData || window.clipboardData).items;
             for (let index in items) {
@@ -565,7 +562,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 드래그 앤 드롭 이벤트
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             referencePostSection.addEventListener(eventName, (e) => {
                 e.preventDefault();
@@ -619,10 +615,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
         
+        // --- 모달 이벤트 리스너 ---
         historyBtn.addEventListener('click', () => { loadHistory(); historyModal.classList.remove('hidden'); });
         statsBtn.addEventListener('click', () => { loadStatistics(); statsModal.classList.remove('hidden'); });
+        helpBtn.addEventListener('click', () => { helpModal.classList.remove('hidden'); });
+        
         closeHistoryBtn.addEventListener('click', () => { historyModal.classList.add('hidden'); });
         closeStatsBtn.addEventListener('click', () => { statsModal.classList.add('hidden'); });
+        closeHelpBtn.addEventListener('click', () => { helpModal.classList.add('hidden'); });
         
         rewriteHookBtn.addEventListener('click', () => rewrite('hook'));
         rewriteLineBtn.addEventListener('click', () => rewrite('line'));
