@@ -35,6 +35,12 @@
             display: block;
             color: #64748b;
         }
+        /* 드래그 앤 드롭 시각적 피드백 스타일 */
+        .drag-over {
+            border-style: dashed !important;
+            border-color: #34d399 !important;
+            transform: scale(1.01);
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-200 antialiased">
@@ -43,7 +49,7 @@
         <!-- Header -->
         <header class="text-center mb-8 md:mb-12">
             <h1 class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">KNS 카페 콘텐츠 생성기</h1>
-            <p class="text-slate-400 text-lg">v4.0 <span class="text-xs ml-1 px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full">랜덤 닉네임</span></p>
+            <p class="text-slate-400 text-lg">OBT <span class="text-xs ml-1 px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full">ft. Gemini</span></p>
         </header>
 
         <!-- Main Content -->
@@ -112,14 +118,14 @@
                             </select>
                         </div>
 
-                        <div id="referencePostSection" class="hidden">
+                        <div id="referencePostSection" class="hidden p-4 rounded-lg border border-slate-600 bg-slate-900/50 transition-all duration-200">
                             <label for="referencePost" class="block text-sm font-medium text-slate-300 mb-2">참조할 글 내용</label>
                             <div class="flex items-center gap-2 mb-2">
                                 <input type="file" id="ocrImageUpload" accept="image/*" class="hidden">
-                                <button id="ocrUploadBtn" class="flex-1 bg-slate-600 text-sm py-1.5 px-3 rounded-md hover:bg-slate-500 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">캡처 이미지로 내용 채우기 🖼️</button>
+                                <button id="ocrUploadBtn" class="flex-1 bg-slate-600 text-sm py-1.5 px-3 rounded-md hover:bg-slate-500 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">파일에서 찾기 🖼️</button>
                             </div>
                             <p id="ocrStatus" class="text-xs text-emerald-400 h-4 mb-1"></p>
-                            <textarea id="referencePost" rows="4" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none disabled:bg-slate-800" placeholder="댓글을 달고 싶은 기존 글의 내용을 여기에 입력하거나, 위 버튼으로 캡처 이미지를 업로드하세요..."></textarea>
+                            <textarea id="referencePost" rows="4" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none disabled:bg-slate-800" placeholder="여기에 이미지를 붙여넣거나(Ctrl+V) 파일을 드래그해서 놓아주세요!"></textarea>
                         </div>
 
 

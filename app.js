@@ -1,4 +1,4 @@
-// KNS 카페 콘텐츠 생성기 v4.0 - Random Nickname
+// KNS 카페 콘텐츠 생성기 v4.1 - Paste & Drag-and-Drop OCR
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.validateApiKey !== 'function') {
       window.validateApiKey = function() { return true; };
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const categorySelect = document.getElementById('category');
     const postLengthSelect = document.getElementById('postLength');
     const userNameInput = document.getElementById('userName');
-    const regenNameBtn = document.getElementById('regenNameBtn'); // 닉네임 재생성 버튼
+    const regenNameBtn = document.getElementById('regenNameBtn');
     const generateBtn = document.getElementById('generateBtn');
     const copyBtn = document.getElementById('copyBtn');
     const outputPlaceholder = document.getElementById('placeholder');
@@ -53,16 +53,52 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentMode = 'post';
     let contentHistory = JSON.parse(localStorage.getItem('knsContentHistory') || '[]');
     
-    // --- 랜덤 닉네임 재료 ---
-    const nameAdjectives = ['빛나는', '열정적인', '창의적인', '똑똑한', '친절한', '날카로운', '성실한', '유쾌한', '따뜻한', '믿음직한'];
-    const nameNouns = ['마케터', '강사님', '기획자', '콘텐츠PD', '상담실장님', '데스크쌤', '원장님', '대표님', '디자이너'];
+    const nameAdjectives = ['익명의', '신비로운', '슬기로운', '날쌘', '용감한', '우아한', '명랑한', '엉뚱한'];
+    const nameNouns = ['쿼카', '카피바라', '알파카', '북극곰', '사막여우', '너구리', '돌고래', '미어캣', '펭귄', '부엉이'];
 
     function generateRandomName() {
         const adj = nameAdjectives[Math.floor(Math.random() * nameAdjectives.length)];
         const noun = nameNouns[Math.floor(Math.random() * nameNouns.length)];
-        const randomNumber = Math.floor(Math.random() * 900) + 100; // 100~999
+        const randomNumber = Math.floor(Math.random() * 900) + 100;
         return `${adj} ${noun}${randomNumber}`;
     }
+    
+    /**
+     * 이미지 파일로부터 텍스트를 추출하는 OCR 처리 함수
+     * @param {File} file - 처리할 이미지 파일
+     */
+    async function processImageFile(file) {
+        if (!file || !file.type.startsWith('image/')) {
+            ocrStatus.textContent = '⚠️ 이미지 파일만 업로드할 수 있어요.';
+            setTimeout(() => { ocrStatus.textContent = ''; }, 3000);
+            return;
+        }
+
+        ocrStatus.textContent = '이미지를 분석 중입니다... 🧠';
+        referencePostInput.disabled = true;
+        ocrUploadBtn.disabled = true;
+
+        try {
+            const worker = await Tesseract.createWorker('kor', 1, {
+                logger: m => console.log(m) // 개발 중 로그 확인용
+            });
+            const { data: { text } } = await worker.recognize(file);
+            await worker.terminate();
+            
+            referencePostInput.value = text;
+            ocrStatus.textContent = '✅ 텍스트 추출 완료!';
+            
+        } catch (error) {
+            console.error('OCR Error:', error);
+            ocrStatus.textContent = '❌ 오류: 텍스트를 추출하지 못했습니다.';
+        } finally {
+            referencePostInput.disabled = false;
+            ocrUploadBtn.disabled = false;
+            ocrImageUpload.value = ''; // input 값 초기화
+            setTimeout(() => { ocrStatus.textContent = ''; }, 3000);
+        }
+    }
+
 
     const personaModifiers = {
         personalities: ['정보력이 뛰어나고 꼼꼼한', '다른 엄마들과 교류를 즐기는 사교적인', '아이의 의견을 존중하는 민주적인', '목표 지향적이고 계획적인', '다소 불안감이 높고 예민한', '긍정적이고 낙천적인', '데이터와 통계를 신뢰하는 분석적인', '감성적이고 공감 능력이 뛰어난', '자녀 교육에 대한 주관이 뚜렷한', '유머 감각이 있고 위트있는'],
@@ -508,35 +544,55 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('knsContentGeneratorUserName', newName);
         });
         
+        // --- OCR 관련 이벤트 핸들러 ---
         ocrUploadBtn.addEventListener('click', () => ocrImageUpload.click());
-        ocrImageUpload.addEventListener('change', async (event) => {
+        ocrImageUpload.addEventListener('change', (event) => {
             const file = event.target.files[0];
-            if (!file) return;
-
-            ocrStatus.textContent = '이미지를 분석 중입니다... 🧠';
-            referencePostInput.disabled = true;
-            ocrUploadBtn.disabled = true;
-
-            try {
-                const worker = await Tesseract.createWorker('kor', 1, {
-                    logger: m => console.log(m)
-                });
-                const { data: { text } } = await worker.recognize(file);
-                await worker.terminate();
-                
-                referencePostInput.value = text;
-                ocrStatus.textContent = '✅ 텍스트 추출 완료!';
-                
-            } catch (error) {
-                console.error('OCR Error:', error);
-                ocrStatus.textContent = '❌ 오류: 텍스트를 추출하지 못했습니다.';
-            } finally {
-                referencePostInput.disabled = false;
-                ocrUploadBtn.disabled = false;
-                ocrImageUpload.value = '';
-                setTimeout(() => { ocrStatus.textContent = ''; }, 3000);
+            if(file) processImageFile(file);
+        });
+        
+        // 붙여넣기 이벤트
+        referencePostInput.addEventListener('paste', (event) => {
+            const items = (event.clipboardData || window.clipboardData).items;
+            for (let index in items) {
+                const item = items[index];
+                if (item.kind === 'file') {
+                    event.preventDefault();
+                    const blob = item.getAsFile();
+                    processImageFile(blob);
+                    break;
+                }
             }
         });
+
+        // 드래그 앤 드롭 이벤트
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            referencePostSection.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            referencePostSection.addEventListener(eventName, () => {
+                referencePostSection.classList.add('drag-over');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            referencePostSection.addEventListener(eventName, () => {
+                referencePostSection.classList.remove('drag-over');
+            }, false);
+        });
+
+        referencePostSection.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files && files.length > 0) {
+                processImageFile(files[0]);
+            }
+        }, false);
+
 
         toggleAdvanced.addEventListener('click', () => {
             const isHidden = advancedControls.classList.toggle('hidden');
