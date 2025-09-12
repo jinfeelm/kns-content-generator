@@ -1,6 +1,5 @@
-// KNS 카페 콘텐츠 생성기 v3.7 - Auto-Seasonal & Final
+// KNS 카페 콘텐츠 생성기 v4.0 - Random Nickname
 document.addEventListener('DOMContentLoaded', () => {
-    // config.js가 없거나 validateApiKey 함수가 없을 경우를 대비한 더미 함수
     if (typeof window.validateApiKey !== 'function') {
       window.validateApiKey = function() { return true; };
     }
@@ -16,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const categorySelect = document.getElementById('category');
     const postLengthSelect = document.getElementById('postLength');
     const userNameInput = document.getElementById('userName');
+    const regenNameBtn = document.getElementById('regenNameBtn'); // 닉네임 재생성 버튼
     const generateBtn = document.getElementById('generateBtn');
     const copyBtn = document.getElementById('copyBtn');
     const outputPlaceholder = document.getElementById('placeholder');
@@ -46,12 +46,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeHistoryBtn = document.getElementById('closeHistoryBtn');
     const closeStatsBtn = document.getElementById('closeStatsBtn');
     const historyList = document.getElementById('historyList');
+    const ocrUploadBtn = document.getElementById('ocrUploadBtn');
+    const ocrImageUpload = document.getElementById('ocrImageUpload');
+    const ocrStatus = document.getElementById('ocrStatus');
     
-    // --- 상태 관리 ---
     let currentMode = 'post';
     let contentHistory = JSON.parse(localStorage.getItem('knsContentHistory') || '[]');
     
-    // --- Dynamic Persona 재료 ---
+    // --- 랜덤 닉네임 재료 ---
+    const nameAdjectives = ['빛나는', '열정적인', '창의적인', '똑똑한', '친절한', '날카로운', '성실한', '유쾌한', '따뜻한', '믿음직한'];
+    const nameNouns = ['마케터', '강사님', '기획자', '콘텐츠PD', '상담실장님', '데스크쌤', '원장님', '대표님', '디자이너'];
+
+    function generateRandomName() {
+        const adj = nameAdjectives[Math.floor(Math.random() * nameAdjectives.length)];
+        const noun = nameNouns[Math.floor(Math.random() * nameNouns.length)];
+        const randomNumber = Math.floor(Math.random() * 900) + 100; // 100~999
+        return `${adj} ${noun}${randomNumber}`;
+    }
+
     const personaModifiers = {
         personalities: ['정보력이 뛰어나고 꼼꼼한', '다른 엄마들과 교류를 즐기는 사교적인', '아이의 의견을 존중하는 민주적인', '목표 지향적이고 계획적인', '다소 불안감이 높고 예민한', '긍정적이고 낙천적인', '데이터와 통계를 신뢰하는 분석적인', '감성적이고 공감 능력이 뛰어난', '자녀 교육에 대한 주관이 뚜렷한', '유머 감각이 있고 위트있는'],
         situations: ['최근 아이가 성적이 올라 기분이 좋은 상태', '아이의 사춘기 때문에 골머리를 앓고 있는 상태', 'KNS 설명회에서 좋은 정보를 얻어 신이 난 상태', '다른 엄마와의 교육관 차이로 스트레스를 받은 상태', '자녀의 장래희망 때문에 진지하게 고민 중인 상태', '겨울방학 특강을 뭘 들을지 행복한 고민에 빠진 상태', '아이의 스마트폰 사용 문제로 크게 다툰 상태', '시험 결과에 실망했지만, 아이를 다독여주려는 상태', '새로운 입시 정책 발표로 마음이 복잡한 상태', '아이의 학습 태도가 좋아져 뿌듯함을 느끼는 상태', '주변의 기대 때문에 부담감을 느끼는 상태', '자녀의 친구 관계 때문에 걱정이 많은 상태'],
@@ -139,15 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 advancedControls.classList.remove('hidden');
                 toggleAdvanced.textContent = '⚙️ 전문가 모드 닫기';
                 referencePostInput.focus();
-                alert('댓글을 작성할 기존 글의 내용을 "참조할 글 내용"에 붙여넣고 [전문가 모드로 생성하기] 버튼을 눌러주세요.');
                 return;
-        }
-
-        if (!userNameInput.value.trim()) {
-            const name = prompt("콘텐츠를 생성하기 전, 작성자 이름을 입력해주세요. (예: 김마케터)");
-            if (!name) return;
-            userNameInput.value = name;
-            localStorage.setItem('knsContentGeneratorUserName', name);
         }
         await generateContent();
     }
@@ -197,6 +201,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function generateContent() {
+        if (!userNameInput.value.trim()) {
+             const randomName = generateRandomName();
+             userNameInput.value = randomName;
+             localStorage.setItem('knsContentGeneratorUserName', randomName);
+        }
+        
         const allButtons = document.querySelectorAll('button');
         allButtons.forEach(b => b.disabled = true);
         outputPlaceholder.classList.add('hidden');
@@ -229,6 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!referencePost) {
                 displayError("댓글을 달고 싶은 기존 글의 내용을 입력해주세요.");
                 allButtons.forEach(b => b.disabled = false);
+                outputLoading.classList.add('hidden');
                 return;
             }
             userQuery = `다음 조건에 맞춰 댓글을 생성해주세요.\n- 참조할 기존 글: \n${referencePost}\n- 콘텐츠 카테고리: ${selectedCategory}`;
@@ -314,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function saveToHistory(content) {
-        const historyItem = { id: Date.now(), timestamp: new Date().toLocaleString('ko-KR'), mode: currentMode, persona: personaSelect.value, category: categorySelect.value, title: content.title, body: content.body, author: userNameInput.value.trim() || '익명' };
+        const historyItem = { id: Date.now(), timestamp: new Date().toLocaleString('ko-KR'), mode: currentMode, persona: personaSelect.value, category: categorySelect.value, title: content.title, body: content.body, author: userNameInput.value.trim() };
         contentHistory.unshift(historyItem);
         const maxHistory = (window.CONFIG && window.CONFIG.MAX_HISTORY_ITEMS) || 100;
         if (contentHistory.length > maxHistory) contentHistory = contentHistory.slice(0, maxHistory);
@@ -382,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const totalContent = contentHistory.length;
         const totalPosts = contentHistory.filter(item => item.mode === 'post').length;
         const totalComments = contentHistory.length - totalPosts;
-        const uniqueAuthors = [...new Set(contentHistory.map(item => item.author).filter(Boolean))].length;
+        const uniqueAuthors = [...new Set(contentHistory.map(item => item.author))].length;
         overallStatsEl.innerHTML = `
             <div class="flex justify-between"><span>총 콘텐츠:</span><span class="font-bold text-emerald-400">${totalContent}개</span></div>
             <div class="flex justify-between"><span>글 / 댓글:</span><span>${totalPosts}개 / ${totalComments}개</span></div>
@@ -472,9 +483,61 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function init() {
-        userNameInput.value = localStorage.getItem('knsContentGeneratorUserName') || '';
-        userNameInput.addEventListener('change', () => localStorage.setItem('knsContentGeneratorUserName', userNameInput.value.trim()));
+        // --- 자동 닉네임 설정 로직 ---
+        let currentName = localStorage.getItem('knsContentGeneratorUserName');
+        if (!currentName) {
+            currentName = generateRandomName();
+            localStorage.setItem('knsContentGeneratorUserName', currentName);
+        }
+        userNameInput.value = currentName;
+
+        userNameInput.addEventListener('change', () => {
+            const newName = userNameInput.value.trim();
+            if (newName) {
+                localStorage.setItem('knsContentGeneratorUserName', newName);
+            } else {
+                const randomName = generateRandomName();
+                userNameInput.value = randomName;
+                localStorage.setItem('knsContentGeneratorUserName', randomName);
+            }
+        });
+
+        regenNameBtn.addEventListener('click', () => {
+            const newName = generateRandomName();
+            userNameInput.value = newName;
+            localStorage.setItem('knsContentGeneratorUserName', newName);
+        });
         
+        ocrUploadBtn.addEventListener('click', () => ocrImageUpload.click());
+        ocrImageUpload.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            ocrStatus.textContent = '이미지를 분석 중입니다... 🧠';
+            referencePostInput.disabled = true;
+            ocrUploadBtn.disabled = true;
+
+            try {
+                const worker = await Tesseract.createWorker('kor', 1, {
+                    logger: m => console.log(m)
+                });
+                const { data: { text } } = await worker.recognize(file);
+                await worker.terminate();
+                
+                referencePostInput.value = text;
+                ocrStatus.textContent = '✅ 텍스트 추출 완료!';
+                
+            } catch (error) {
+                console.error('OCR Error:', error);
+                ocrStatus.textContent = '❌ 오류: 텍스트를 추출하지 못했습니다.';
+            } finally {
+                referencePostInput.disabled = false;
+                ocrUploadBtn.disabled = false;
+                ocrImageUpload.value = '';
+                setTimeout(() => { ocrStatus.textContent = ''; }, 3000);
+            }
+        });
+
         toggleAdvanced.addEventListener('click', () => {
             const isHidden = advancedControls.classList.toggle('hidden');
             toggleAdvanced.textContent = isHidden ? '⚙️ 전문가 모드 열기' : '⚙️ 전문가 모드 닫기';

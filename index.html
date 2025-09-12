@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; }
         ::-webkit-scrollbar { width: 8px; }
@@ -42,7 +43,7 @@
         <!-- Header -->
         <header class="text-center mb-8 md:mb-12">
             <h1 class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">KNS 카페 콘텐츠 생성기</h1>
-            <p class="text-slate-400 text-lg">v3.7 <span class="text-xs ml-1 px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-full">Dynamic Persona</span></p>
+            <p class="text-slate-400 text-lg">v4.0 <span class="text-xs ml-1 px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full">랜덤 닉네임</span></p>
         </header>
 
         <!-- Main Content -->
@@ -113,8 +114,14 @@
 
                         <div id="referencePostSection" class="hidden">
                             <label for="referencePost" class="block text-sm font-medium text-slate-300 mb-2">참조할 글 내용</label>
-                            <textarea id="referencePost" rows="4" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="댓글을 달고 싶은 기존 글의 제목과 내용을 여기에 입력하세요..."></textarea>
+                            <div class="flex items-center gap-2 mb-2">
+                                <input type="file" id="ocrImageUpload" accept="image/*" class="hidden">
+                                <button id="ocrUploadBtn" class="flex-1 bg-slate-600 text-sm py-1.5 px-3 rounded-md hover:bg-slate-500 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">캡처 이미지로 내용 채우기 🖼️</button>
+                            </div>
+                            <p id="ocrStatus" class="text-xs text-emerald-400 h-4 mb-1"></p>
+                            <textarea id="referencePost" rows="4" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none disabled:bg-slate-800" placeholder="댓글을 달고 싶은 기존 글의 내용을 여기에 입력하거나, 위 버튼으로 캡처 이미지를 업로드하세요..."></textarea>
                         </div>
+
 
                         <div>
                             <label for="category" class="block text-sm font-medium text-slate-300 mb-2">카테고리</label>
@@ -144,8 +151,11 @@
 
                     <!-- User Information -->
                     <div class="pt-4 border-t border-slate-700/50">
-                        <label for="userName" class="block text-sm font-medium text-slate-300 mb-2">작성자 정보 (팀 관리용)</label>
-                        <input type="text" id="userName" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="예: 김마케터, 이강사, 박팀장">
+                        <div class="flex justify-between items-center mb-2">
+                            <label for="userName" class="block text-sm font-medium text-slate-300">작성자 정보 (팀 관리용)</label>
+                            <button id="regenNameBtn" class="text-xs bg-slate-600 text-slate-300 px-2 py-1 rounded hover:bg-slate-500 transition">다른 닉네임 🔄</button>
+                        </div>
+                        <input type="text" id="userName" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="자동 생성된 닉네임...">
                     </div>
                 </div>
             </div>
@@ -179,7 +189,6 @@
                         </div>
                     </div>
                 </div>
-                 <!-- Naver Buttons are now hidden -->
                  <div class="hidden gap-2 mt-4">
                     <button id="naverLoginBtn" class="flex-1 bg-emerald-600 text-sm text-white py-2 px-3 rounded-md hover:bg-emerald-500">네이버 로그인</button>
                     <button id="naverPostBtn" class="flex-1 bg-sky-600 text-sm text-white py-2 px-3 rounded-md hover:bg-sky-500 disabled:opacity-50" disabled>카페에 올리기</button>
