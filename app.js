@@ -55,9 +55,23 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let currentMode = 'post';
     let contentHistory = JSON.parse(localStorage.getItem('knsContentHistory') || '[]');
+    let currentGoal = null;
     
     const nameAdjectives = ['익명의', '신비로운', '슬기로운', '날쌘', '용감한', '우아한', '명랑한', '엉뚱한'];
     const nameNouns = ['쿼카', '카피바라', '알파카', '북극곰', '사막여우', '너구리', '돌고래', '미어캣', '펭귄', '부엉이'];
+
+    const postTypeGuidelines = {
+        'SOS형': '도움과 위로를 구하는 고민 토로. 솔직하고 감정선이 살아 있는 톤, 상황 설명 후 구체적인 질문으로 마무리.',
+        '공유형': '정보·경험을 나누는 글. 핵심 요약 → 배경 → 실제 경험 또는 팁 → 마무리 인사 순으로 정리된 구조.',
+        'Q&A형': '단문 문의 글. 현재 상황 요약, 궁금한 포인트를 번호나 불릿으로 정리, 답변 요청으로 마무리.'
+    };
+
+    const goalIntent = {
+        concern: '고민/질문 있어요 — 아이 상황을 구체적으로 묘사하고, 공감과 조언을 구하는 진솔한 톤으로 써주세요.',
+        info: '유용한 정보 공유 — 최근에 확인한 KNS 수업·입시 정보나 노하우를 체계적으로 정리해 공유해주세요.',
+        daily: '가벼운 일상/유머 — 친근한 대화체와 이모티콘으로 일상 에피소드를 전하며 따뜻한 분위기를 만드세요.',
+        comment: '자연스러운 댓글 — 기존 글의 핵심을 먼저 요약해 공감 표시 후, 개인 경험이나 팁을 간결히 덧붙여주세요.'
+    };
 
     function generateRandomName() {
         const adj = nameAdjectives[Math.floor(Math.random() * nameAdjectives.length)];
@@ -149,6 +163,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function switchMode(mode) {
         currentMode = mode;
+        if (mode === 'post' && currentGoal === 'comment') {
+            currentGoal = null;
+        } else if (mode === 'comment' && currentGoal && currentGoal !== 'comment') {
+            currentGoal = null;
+        }
         if (mode === 'post') {
             postModeBtn.className = 'bg-emerald-500 text-white py-2 px-4 rounded-lg font-medium';
             commentModeBtn.className = 'bg-slate-700 text-slate-300 py-2 px-4 rounded-lg font-medium';
@@ -164,30 +183,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function generateGoalBasedContent(goal) {
         postLengthSelect.value = '자동';
-        switch(goal) {
-            case 'concern':
-                postTypeSelect.value = 'SOS형';
-                categorySelect.value = ['학습법/공부 습관', '자녀 관계/멘탈 관리', '학교 정보/입시 전략'][Math.floor(Math.random() * 3)];
-                switchMode('post');
-                break;
-            case 'info':
-                postTypeSelect.value = '공유형';
-                categorySelect.value = Math.random() > 0.3 ? 'KNS 자체 콘텐츠' : '학교 정보/입시 전략';
-                switchMode('post');
-                break;
-            case 'daily':
-                postTypeSelect.value = '공유형';
-                categorySelect.value = '일상/유머';
-                switchMode('post');
-                break;
-            case 'comment':
-                switchMode('comment');
-                advancedControls.classList.remove('hidden');
-                toggleAdvanced.textContent = '⚙️ 전문가 모드 닫기';
-                referencePostInput.focus();
-                return;
+        currentGoal = goal;
+        try {
+            switch(goal) {
+                case 'concern':
+                    postTypeSelect.value = 'SOS형';
+                    categorySelect.value = ['학습법/공부 습관', '자녀 관계/멘탈 관리', '학교 정보/입시 전략'][Math.floor(Math.random() * 3)];
+                    switchMode('post');
+                    break;
+                case 'info':
+                    postTypeSelect.value = '공유형';
+                    categorySelect.value = Math.random() > 0.3 ? 'KNS 자체 콘텐츠' : '학교 정보/입시 전략';
+                    switchMode('post');
+                    break;
+                case 'daily':
+                    postTypeSelect.value = '공유형';
+                    categorySelect.value = '일상/유머';
+                    switchMode('post');
+                    break;
+                case 'comment':
+                    switchMode('comment');
+                    advancedControls.classList.remove('hidden');
+                    toggleAdvanced.textContent = '⚙️ 전문가 모드 닫기';
+                    referencePostInput.focus();
+                    return;
+            }
+            await generateContent();
+        } finally {
+            if (goal !== 'comment') {
+                currentGoal = null;
+            }
         }
-        await generateContent();
     }
     
     function getSmartInstruction(category) {
@@ -249,6 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const selectedPersona = personaSelect.value;
         const selectedCategory = categorySelect.value;
+        const selectedPostType = postTypeSelect.value;
         
         const coreDescription = personaDetails[selectedPersona].description;
 
@@ -262,12 +289,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const smartInstruction = getSmartInstruction(selectedCategory);
         const currentMonth = new Date().getMonth();
         const seasonalGuide = getSeasonalGuide(currentMonth, selectedCategory);
+        const postTypeGuide = currentMode === 'post' ? postTypeGuidelines[selectedPostType] : '';
+        const goalGuide = currentGoal ? (goalIntent[currentGoal] || '') : '';
+        const goalContextLabel = currentMode === 'comment' ? '댓글 목표 맥락' : '글 목표 맥락';
+        const contextualDirectiveItems = [
+            seasonalGuide,
+            currentMode === 'post' && postTypeGuide ? `**글 유형 가이드:** ${selectedPostType} — ${postTypeGuide}` : '',
+            goalGuide ? `**${goalContextLabel}:** ${goalGuide}` : '',
+            `**글 유형/목표 준수 규칙:**\n- 위에서 정의한 글 유형·목표 설명을 반드시 반영하여 톤, 문단 구성, 마무리 방식을 조정하세요.\n- 글 유형과 목표가 충돌할 경우, 글 유형의 구조를 우선하되 목표가 요구하는 감정선과 메시지를 본문에서 살려주세요.`
+        ].filter(Boolean);
+        const contextualDirectiveText = contextualDirectiveItems.length > 0 ? contextualDirectiveItems.join('\n\n') + '\n\n' : '';
 
-        let systemPrompt = `당신은 대한민국 서울 대치동의 학부모들이 이용하는 온라인 입시 정보 카페를 위한 콘텐츠를 생성하는 AI입니다. 실제 학부모가 쓴 것처럼 자연스럽고 현실감 있는 톤앤매너를 완벽하게 구현해야 합니다. 다음 페르소나의 역할에 100% 빙의하여 응답해주세요:\n\n**페르소나 프로필:**\n${dynamicPersonaDescription}\n\n${seasonalGuide ? seasonalGuide + '\n\n' : ''}**콘텐츠 생성 규칙:**\n1. 게시글의 경우, 제목과 본문을 "제목: [제목 내용]"과 "본문: [본문 내용]" 형식으로 명확히 구분하여 생성합니다.\n2. 댓글의 경우, "댓글: [댓글 내용]" 형식으로 생성합니다.\n3. 실제 커뮤니티처럼 이모티콘(😊, ㅠㅠ, 👍 등)을 자연스럽게 사용하고, 적절한 줄 바꿈으로 가독성을 높여주세요.\n4. 매번 다른 스타일과 표현을 사용하여 천편일률적이지 않게 작성하세요.\n5. 개인적인 경험이나 구체적인 상황을 포함하여 현실감을 높이세요.\n${smartInstruction}`;
+        let systemPrompt = `당신은 대한민국 서울 대치동의 학부모들이 이용하는 온라인 입시 정보 카페를 위한 콘텐츠를 생성하는 AI입니다. 실제 학부모가 쓴 것처럼 자연스럽고 현실감 있는 톤앤매너를 완벽하게 구현해야 합니다. 다음 페르소나의 역할에 100% 빙의하여 응답해주세요:\n\n**페르소나 프로필:**\n${dynamicPersonaDescription}\n\n${contextualDirectiveText}**콘텐츠 생성 규칙:**\n1. 게시글의 경우, 제목과 본문을 "제목: [제목 내용]"과 "본문: [본문 내용]" 형식으로 명확히 구분하여 생성합니다.\n2. 댓글의 경우, "댓글: [댓글 내용]" 형식으로 생성합니다.\n3. 실제 커뮤니티처럼 이모티콘(😊, ㅠㅠ, 👍 등)을 자연스럽게 사용하고, 적절한 줄 바꿈으로 가독성을 높여주세요.\n4. 매번 다른 스타일과 표현을 사용하여 천편일률적이지 않게 작성하세요.\n5. 개인적인 경험이나 구체적인 상황을 포함하여 현실감을 높이세요.\n${smartInstruction}`;
 
         let userQuery = '';
         if (currentMode === 'post') {
-            userQuery = `다음 조건에 맞춰 글을 생성해주세요.\n- 글 유형: ${postTypeSelect.value}\n- 콘텐츠 카테고리: ${selectedCategory}`;
+            const postTypeLine = `- 글 유형: ${selectedPostType}${postTypeGuide ? ` — ${postTypeGuide}` : ''}`;
+            const goalLine = `- 글 목표: ${goalGuide || '사용자가 직접 설정한 목표가 없습니다.'}`;
+            userQuery = `다음 조건에 맞춰 글을 생성해주세요.\n${postTypeLine}\n${goalLine}\n- 콘텐츠 카테고리: ${selectedCategory}`;
         } else {
             const referencePost = referencePostInput.value.trim();
             if (!referencePost) {
@@ -276,7 +315,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 outputLoading.classList.add('hidden');
                 return;
             }
-            userQuery = `다음 조건에 맞춰 댓글을 생성해주세요.\n- 참조할 기존 글: \n${referencePost}\n- 콘텐츠 카테고리: ${selectedCategory}`;
+            const goalLine = `- 댓글 목표: ${goalGuide || '기본 댓글 모드'}`;
+            userQuery = `다음 조건에 맞춰 댓글을 생성해주세요.\n- 참조할 기존 글: \n${referencePost}\n${goalLine}\n- 콘텐츠 카테고리: ${selectedCategory}`;
         }
 
         try {
