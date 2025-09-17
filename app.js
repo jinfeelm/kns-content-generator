@@ -56,6 +56,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentMode = 'post';
     let contentHistory = JSON.parse(localStorage.getItem('knsContentHistory') || '[]');
     let currentGoal = null;
+
+    const appConfig = window.CONFIG || {};
+    const normalizedFunctionsBaseUrl = (() => {
+        const rawBase = typeof appConfig.FUNCTIONS_BASE_URL === 'string'
+            ? appConfig.FUNCTIONS_BASE_URL.trim()
+            : '';
+        if (!rawBase) return '/.netlify/functions';
+        const sanitized = rawBase.replace(/\/+$/, '');
+        return sanitized || '/.netlify/functions';
+    })();
+    const getFunctionUrl = (name) => {
+        const sanitizedName = name.startsWith('/') ? name.slice(1) : name;
+        return `${normalizedFunctionsBaseUrl}/${sanitizedName}`;
+    };
     
     const nameAdjectives = ['익명의', '신비로운', '슬기로운', '날쌘', '용감한', '우아한', '명랑한', '엉뚱한'];
     const nameNouns = ['쿼카', '카피바라', '알파카', '북극곰', '사막여우', '너구리', '돌고래', '미어캣', '펭귄', '부엉이'];
@@ -320,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`/.netlify/functions/generate`, {
+            const response = await fetch(getFunctionUrl('generate'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -508,7 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? `아래 글의 첫 문장(후킹 문장)만 더 강렬하고 자연스럽게 1문장으로 바꿔주세요. 같은 의미를 다른 표현으로:\n제목: ${title}\n본문: ${originalBody}` 
                 : `아래 글에서 가장 핵심적인 문장이나 어색한 문장 하나를 골라, 같은 의미를 유지하되 표현을 더 매력적으로 바꿔 1문장으로 제시하세요. (원문 반환 X)\n제목: ${title}\n본문: ${originalBody}`;
             
-            const response = await fetch('/.netlify/functions/generate', {
+            const response = await fetch(getFunctionUrl('generate'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
