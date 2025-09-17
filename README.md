@@ -18,17 +18,29 @@
 ### 1. 파일 다운로드
 모든 파일을 같은 폴더에 저장하세요.
 
-### 2. API 키 설정
+### 2. API 키 및 함수 엔드포인트 설정
 `config.js` 파일을 열어서 다음 부분을 수정하세요:
 
 ```javascript
-const CONFIG = {
+window.CONFIG = {
     // Google Gemini API 설정
     API_KEY: "YOUR_API_KEY_HERE", // ← 여기에 실제 API 키를 입력하세요
     MODEL_NAME: "gemini-2.5-flash-preview-05-20",
     // ... 기타 설정
 };
 ```
+
+#### FUNCTIONS_BASE_URL 옵션 (웹호스팅용)
+- Netlify에서 정적 사이트 + Functions를 함께 사용할 경우: 기본값(`/.netlify/functions`)이면 됩니다.
+- GitHub Pages나 기타 정적 호스팅에서 테스트하면서 Netlify Functions를 호출하고 싶다면:
+  ```javascript
+  window.CONFIG = {
+      FUNCTIONS_BASE_URL: "https://<your-netlify-site>.netlify.app/.netlify/functions",
+      // ... 기타 설정
+  };
+  ```
+  위처럼 Functions가 배포된 풀 URL을 지정하면, 정적 웹호스팅에서도 동일한 프론트엔드로 테스트할 수 있습니다.
+- Netlify Functions 쪽에서는 `ALLOWED_ORIGIN` 환경 변수를 설정하면 CORS 허용 도메인을 제한할 수 있습니다. (기본값 `*`)
 
 ### 3. 브라우저에서 실행
 `KNS 카페 콘텐츠 생성기_보안강화.html` 파일을 브라우저에서 열어주세요.
