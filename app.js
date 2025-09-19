@@ -1,4 +1,4 @@
-// KNS 카페 콘텐츠 생성기 v4.3 - Streaming Update
+// KNS 카페 콘텐츠 생성기 v4.6 - Topic Sparks Update
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.validateApiKey !== 'function') {
       window.validateApiKey = function() { return true; };
@@ -160,6 +160,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // ✅ New: Specific topic sparks for each persona to increase variety
+    const topicSparks = {
+        '초등 저학년맘': [
+            "아이가 갑자기 학원 가기 싫다고 떼를 써서 고민이에요. 어떻게 달래야 할까요?",
+            "영어 원서 읽기, 어떤 레벨부터 시작해야 아이가 흥미를 붙일까요? 책 추천 좀 해주세요.",
+            "초3 되니 영어 격차가 확 벌어지는 것 같은데, 다들 어떻게 대비하고 계신가요?",
+            "아이가 친구 관계 때문에 힘들어하는데, 부모가 어디까지 개입해야 할지 모르겠어요.",
+            "KNS 다니고 있는데, 숙제 말고 집에서 더 해줄 게 있을까요?",
+            "요즘 애들 장래희망은 저희 때랑은 완전 다른 것 같아요. 다들 아이 꿈이 뭔가요?",
+            "주말마다 아이랑 뭐하고 놀아주시나요?"
+        ],
+        '특목·자사고 준비맘': [
+            "KNS 레벨테스트 보신 분 계시면 후기 좀 부탁드려요! 난이도가 어떤가요?",
+            "중등 선행, 방학 때 영어의 어떤 영역 다뤄야 할까요?",
+            "슬슬 중학교 내신 대비해야 할 것 같은데, KNS 중등부 프로그램이 도움이 많이 될까요?",
+            "아이가 공부는 잘하는데, 체력이 너무 약해서 걱정이에요. 체력 관리 팁 있나요?",
+            "수행평가 비중이 점점 커진다는데, 미리 준비할 만한 게 있을까요?",
+            "아이 용돈, 다들 얼마씩 주시나요? 경제 교육도 시켜야 할 것 같아서요."
+        ],
+        '중등 입문맘': [
+            "중학교 올라가니 수행평가가 너무 많아요. 일정 관리 어떻게 해줘야 할까요?",
+            "아이가 스마트폰에 너무 빠져 있어서 걱정이에요. 좋은 해결 방법 없을까요?",
+            "중1 첫 시험 생각하면 벌써부터 긴장되네요.",
+            "KNS 중등부 처음인데, 레벨이 너무 다양해서 어떤 반을 목표로 해야할지 모르겠어요.",
+            "아이가 사춘기인지 부쩍 말을 안 하려고 해요. 이 시기 어떻게 지나가야 할까요?",
+            "친구들이랑 학원 끝나고 맨날 편의점 가는데, 그냥 둬도 괜찮겠죠?"
+        ],
+        '내신 격전지맘': [
+            "중2 영어 내신, 정말 장난 아니네요. KNS 내신 대비반 효과 보신 분 계신가요?",
+            "아이 친구 문제 때문에 속상한 일이 있었는데, 어디다 털어놓을 데가 없네요.",
+            "사춘기 자녀와 대화하는 꿀팁 좀 전수해주세요. 정말 하루하루가 전쟁 같아요.",
+            "진도가 너무 빨라서 아이가 힘들어하는데, 학원을 바꿔야 할까요?",
+            "요즘 아이가 부쩍 외모에 신경 쓰는데, 공부에 방해될까 봐 걱정이에요.",
+            "KNS 다니면서 다른 과목 성적까지 같이 오른 경험 있으신 분 있나요?",
+            "시험 기간만 되면 너무 예민해지는 아이, 어떻게 멘탈 관리 해주시나요?"
+        ],
+        '고입 최종관문맘': [
+            "고등학교 원서 쓸 시즌이 다가오니 하루하루 피가 마르네요. 다들 어디 생각하고 계세요?",
+            "자사고 면접 준비, KNS 특강 말고 따로 준비해야 할 게 또 있을까요?",
+            "중3 마지막 내신, 끝까지 긴장을 놓을 수가 없네요. 다들 파이팅해요!",
+            "자기소개서에 어떤 내용을 녹여내야 좋은 평가를 받을 수 있을까요? 막막하네요.",
+            "아이가 원하는 고등학교랑 부모가 원하는 고등학교가 달라서 갈등이 있어요.",
+            "고등학교 최종 합격하고 나면, 입학 전까지 뭘 준비시켜야 할까요? (예비 고1)",
+            "고생한 아이에게 어떤 선물을 해줘야 좋아할까요?"
+        ]
+    };
+
     const seasonalKeywords = {
         0: { guide: "지금은 1월입니다. 겨울방학 특강, 새 학년 준비, 예비중/예비고1 과정에 대한 주제가 좋습니다.", activeCategories: ['학습법/공부 습관', '학교 정보/입시 전략', 'KNS 자체 콘텐츠', '학원 생활/시스템 문의'], backgroundCategories: ['자녀 관계/멘탈 관리'] },
         1: { guide: "지금은 2월입니다. 신학기 증후군, 새 학년 내신 대비 전략, 마무리 특강에 대한 주제가 좋습니다.", activeCategories: ['학습법/공부 습관', '학교 정보/입시 전략', 'KNS 자체 콘텐츠', '학원 생활/시스템 문의'], backgroundCategories: ['자녀 관계/멘탈 관리'] },
@@ -235,27 +282,27 @@ document.addEventListener('DOMContentLoaded', () => {
         switch(category) {
             case 'KNS 자체 콘텐츠':
             case '학원 생활/시스템 문의':
-                instruction = "6. **[주제 집중!] 당신은 지금 KNS 학원과 직접 관련된 글을 쓰고 있습니다. KNS의 프로그램, 시스템, 영어 교육 방식에 대해 집중적으로 이야기해주세요.**";
+                instruction = "8. **[주제 집중!] 당신은 지금 KNS 학원과 직접 관련된 글을 쓰고 있습니다. KNS의 프로그램, 시스템, 영어 교육 방식에 대해 집중적으로 이야기해주세요.**";
                 break;
             case '학습법/공부 습관':
             case '학교 정보/입시 전략':
-                instruction = "6. **[주제 유연성] 다른 과목(수학, 국어 등)에 대한 고민을 자유롭게 이야기해도 좋습니다. 하지만 만약 자연스러운 기회가 생긴다면, 영어 실력이 다른 과목에 미치는 긍정적인 영향에 대해 살짝 언급해줄 수 있습니다. 억지로 연결하지는 마세요.**";
+                instruction = "8. **[주제 유연성] 다른 과목(수학, 국어 등)에 대한 고민을 자유롭게 이야기해도 좋습니다. 하지만 만약 자연스러운 기회가 생긴다면, 영어 실력이 다른 과목에 미치는 긍정적인 영향에 대해 살짝 언급해줄 수 있습니다. 억지로 연결하지는 마세요.**";
                 break;
             case '자녀 관계/멘탈 관리':
             case '일상/유머':
-                instruction = "6. **[공감 집중!] 지금은 공부나 학원 이야기는 잠시 접어두세요. 아이와의 관계, 엄마의 감정, 소소한 일상 등 순수하게 감성적이고 인간적인 부분에 100% 집중하여 공감과 위로를 주는 글을 작성해주세요.**";
+                instruction = "8. **[공감 집중!] 지금은 공부나 학원 이야기는 잠시 접어두세요. 아이와의 관계, 엄마의 감정, 소소한 일상 등 순수하게 감성적이고 인간적인 부분에 100% 집중하여 공감과 위로를 주는 글을 작성해주세요.**";
                 break;
             default:
-                instruction = "6. KNS는 영어가 중심인 학원이라는 점을 기억해주세요.";
+                instruction = "8. KNS는 영어가 중심인 학원이라는 점을 기억해주세요.";
         }
         
         const selectedLength = postLengthSelect.value;
         if (selectedLength === "짧게") {
-            instruction += "\n7. **[글 길이 절대 규칙!] 당신은 '짧게' 쓰라는 명령을 받았습니다. 반드시 1~3개의 문장으로 글을 마무리해야 합니다. 이 규칙은 선택이 아닌 필수입니다.**";
+            instruction += "\n9. **[글 길이 절대 규칙!] 당신은 '짧게' 쓰라는 명령을 받았습니다. 반드시 1~3개의 문장으로 글을 마무리해야 합니다. 이 규칙은 선택이 아닌 필수입니다.**";
         } else if (selectedLength === "보통") {
-            instruction += "\n7. **[글 길이 절대 규칙!] 당신은 '보통' 길이로 쓰라는 명령을 받았습니다. 반드시 4~7개의 문장으로 글을 작성해야 합니다. 이 규칙은 선택이 아닌 필수입니다.**";
+            instruction += "\n9. **[글 길이 절대 규칙!] 당신은 '보통' 길이로 쓰라는 명령을 받았습니다. 반드시 4~7개의 문장으로 글을 작성해야 합니다. 이 규칙은 선택이 아닌 필수입니다.**";
         } else if (selectedLength === "길게") {
-            instruction += "\n7. **[글 길이 절대 규칙!] 당신은 '길게' 쓰라는 명령을 받았습니다. 반드시 8개 이상의 문장과 여러 문단으로 글을 작성해야 합니다. 이 규칙은 선택이 아닌 필수입니다.**";
+            instruction += "\n9. **[글 길이 절대 규칙!] 당신은 '길게' 쓰라는 명령을 받았습니다. 반드시 8개 이상의 문장과 여러 문단으로 글을 작성해야 합니다. 이 규칙은 선택이 아닌 필수입니다.**";
         }
         return instruction;
     }
@@ -315,13 +362,27 @@ document.addEventListener('DOMContentLoaded', () => {
         ].filter(Boolean);
         const contextualDirectiveText = contextualDirectiveItems.length > 0 ? contextualDirectiveItems.join('\n\n') + '\n\n' : '';
 
-        let systemPrompt = `당신은 대한민국 서울 대치동의 학부모들이 이용하는 온라인 입시 정보 카페를 위한 콘텐츠를 생성하는 AI입니다. 실제 학부모가 쓴 것처럼 자연스럽고 현실감 있는 톤앤매너를 완벽하게 구현해야 합니다. 다음 페르소나의 역할에 100% 빙의하여 응답해주세요:\n\n**페르소나 프로필:**\n${dynamicPersonaDescription}\n\n${contextualDirectiveText}**콘텐츠 생성 규칙:**\n1. 게시글의 경우, 제목과 본문을 "제목: [제목 내용]"과 "본문: [본문 내용]" 형식으로 명확히 구분하여 생성합니다.\n2. 댓글의 경우, "댓글: [댓글 내용]" 형식으로 생성합니다.\n3. 실제 커뮤니티처럼 이모티콘(😊, ㅠㅠ, 👍 등)을 자연스럽게 사용하고, 적절한 줄 바꿈으로 가독성을 높여주세요.\n4. 매번 다른 스타일과 표현을 사용하여 천편일률적이지 않게 작성하세요.\n5. 개인적인 경험이나 구체적인 상황을 포함하여 현실감을 높이세요.\n${smartInstruction}`;
+        // ✅ System prompt updated for more natural tone and to use topic sparks
+        let systemPrompt = `당신은 대한민국 서울 대치동의 학부모들이 이용하는 온라인 입시 정보 카페를 위한 콘텐츠를 생성하는 AI입니다. 실제 학부모가 쓴 것처럼 자연스럽고 현실감 있는 톤앤매너를 완벽하게 구현해야 합니다. 다음 페르소나의 역할에 100% 빙의하여 응답해주세요:\n\n**페르소나 프로필:**\n${dynamicPersonaDescription}\n\n${contextualDirectiveText}**콘텐츠 생성 규칙:**
+1. **[가장 중요] 지금부터 당신은 아래 '사용자 요청'에 제시된 '주제 씨앗'에 대해 이야기하는 실제 학부모입니다. 페르소나의 특징을 유지하면서, 이 '주제 씨앗'을 중심으로 자연스러운 글을 작성하세요.**
+2. 게시글의 경우, 제목과 본문을 "제목: [제목 내용]"과 "본문: [본문 내용]" 형식으로 명확히 구분하여 생성합니다.
+3. 댓글의 경우, "댓글: [댓글 내용]" 형식으로 생성합니다.
+4. 실제 커뮤니티처럼 이모티콘(😊, ㅠㅠ, 👍 등)을 자연스럽게 사용하고, 적절한 줄 바꿈으로 가독성을 높여주세요.
+5. 매번 다른 스타일과 표현을 사용하여 천편일률적이지 않게 작성하세요.
+6. 개인적인 경험이나 구체적인 상황을 포함하여 현실감을 높이세요.
+7. **[매우 중요] 절대로 '[핵심요약]', '[마무리]'와 같은 형식적인 소제목이나 구분선을 사용하지 마세요. 모든 글은 실제 학부모가 쓰는 것처럼 자연스러운 문장과 문단으로만 구성되어야 합니다.**
+8. **[강조 최소화] 텍스트 강조(\`**\`)는 꼭 필요한 핵심 단어에만 최소한으로 사용하고, 인위적인 느낌을 주지 않도록 주의하세요.**
+${smartInstruction}`;
 
         let userQuery = '';
         if (currentMode === 'post') {
+            // ✅ Select a random topic spark
+            const sparks = topicSparks[selectedPersona] || ["최근 교육 관련해서 고민이 있어요."];
+            const randomSpark = sparks[Math.floor(Math.random() * sparks.length)];
+            
             const postTypeLine = `- 글 유형: ${selectedPostType}${postTypeGuide ? ` — ${postTypeGuide}` : ''}`;
             const goalLine = `- 글 목표: ${goalGuide || '사용자가 직접 설정한 목표가 없습니다.'}`;
-            userQuery = `다음 조건에 맞춰 글을 생성해주세요.\n${postTypeLine}\n${goalLine}\n- 콘텐츠 카테고리: ${selectedCategory}`;
+            userQuery = `다음 조건에 맞춰 글을 생성해주세요.\n- 주제 씨앗: "${randomSpark}"\n${postTypeLine}\n${goalLine}\n- 콘텐츠 카테고리: ${selectedCategory}`;
         } else {
             const referencePost = referencePostInput.value.trim();
             if (!referencePost) {
@@ -334,102 +395,118 @@ document.addEventListener('DOMContentLoaded', () => {
             userQuery = `다음 조건에 맞춰 댓글을 생성해주세요.\n- 참조할 기존 글: \n${referencePost}\n${goalLine}\n- 콘텐츠 카테고리: ${selectedCategory}`;
         }
 
-        try {
-            const response = await fetch(getFunctionUrl('generate'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: userQuery }] }],
-                    systemInstruction: { parts: [{ text: systemPrompt }] },
-                    generationConfig: { temperature: 1.1, topP: 0.95, topK: 40 }
-                })
-            });
+        const maxRetries = 3;
+        let attempt = 0;
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`API 요청 실패: ${response.status} ${errorText}`);
-            }
+        while (attempt < maxRetries) {
+            try {
+                const response = await fetch(getFunctionUrl('generate'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: userQuery }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] },
+                        generationConfig: { temperature: 1.1, topP: 0.95, topK: 40 }
+                    })
+                });
 
-            // --- ⬇️ 스트리밍 처리 로직으로 변경 ⬇️ ---
-            outputLoading.classList.add('hidden');
-            outputResult.classList.remove('hidden');
-            
-            resultTitle.textContent = "콘텐츠 생성 중...";
-            resultPersonaIcon.textContent = personaInfo.icon;
-            resultPersonaName.textContent = selectedPersona;
-            resultPersonaName.className = `font-semibold ${personaInfo.color}`;
-            resultBody.innerHTML = '';
-            
-            const cursor = document.createElement('span');
-            cursor.className = 'blinking-cursor';
-            resultBody.appendChild(cursor);
+                if (response.status === 504 || response.status === 404) {
+                    throw new Error(`서버 응답 오류: ${response.status}`);
+                }
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API 요청 실패: ${response.status} ${errorText}`);
+                }
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-
-                buffer += decoder.decode(value, { stream: true });
+                outputLoading.classList.add('hidden');
+                outputResult.classList.remove('hidden');
                 
-                // Gemini SSE 스트림은 "data: "로 시작하는 JSON 객체들을 포함합니다.
-                const parts = buffer.split('\n\n');
-                buffer = parts.pop() || ''; // 마지막 불완전한 부분은 버퍼에 남김
+                resultTitle.textContent = "콘텐츠 생성 중...";
+                resultPersonaIcon.textContent = personaInfo.icon;
+                resultPersonaName.textContent = selectedPersona;
+                resultPersonaName.className = `font-semibold ${personaInfo.color}`;
+                resultBody.innerHTML = '';
                 
-                for(const part of parts) {
-                    if (part.startsWith('data: ')) {
-                        try {
-                             const jsonString = part.substring(6); // "data: " 제거
-                             const json = JSON.parse(jsonString);
-                             const textChunk = json.candidates?.[0]?.content?.parts?.[0]?.text;
-                             if (textChunk) {
-                                resultBody.insertBefore(document.createTextNode(textChunk), cursor);
-                             }
-                        } catch(e) {
-                             console.warn("JSON 파싱 오류:", part);
+                const cursor = document.createElement('span');
+                cursor.className = 'blinking-cursor';
+                resultBody.appendChild(cursor);
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const parts = buffer.split('\n\n');
+                    buffer = parts.pop() || '';
+                    
+                    for(const part of parts) {
+                        if (part.startsWith('data: ')) {
+                            try {
+                                const jsonString = part.substring(6);
+                                const json = JSON.parse(jsonString);
+                                const textChunk = json.candidates?.[0]?.content?.parts?.[0]?.text;
+                                if (textChunk) {
+                                    resultBody.insertBefore(document.createTextNode(textChunk), cursor);
+                                }
+                            } catch(e) {
+                                console.warn("JSON 파싱 오류:", part);
+                            }
                         }
                     }
                 }
-            }
 
-            cursor.remove(); // 스트리밍 완료 후 커서 제거
-            
-            // 스트리밍 완료 후 제목/본문 분리 및 저장
-            const rawText = resultBody.innerText;
-            let titleText = "생성된 콘텐츠", bodyText = rawText;
-            
-            if (rawText.includes("제목:") && rawText.includes("본문:")) {
-                titleText = rawText.split("제목:")[1].split("본문:")[0].trim();
-                bodyText = rawText.split("본문:")[1].trim();
-            } else if (rawText.includes("댓글:")) {
-                titleText = `(댓글)`;
-                bodyText = rawText.split("댓글:")[1].trim();
-            }
-            
-            resultTitle.textContent = titleText;
-            resultBody.innerText = bodyText; // 최종 정리된 텍스트로 교체
-            copyBtn.disabled = false;
-            
-            saveToHistory({ title: titleText, body: bodyText });
+                cursor.remove();
+                
+                const rawText = resultBody.innerText;
+                let titleText = "생성된 콘텐츠", bodyText = rawText;
+                
+                if (rawText.includes("제목:") && rawText.includes("본문:")) {
+                    titleText = rawText.split("제목:")[1].split("본문:")[0].trim();
+                    bodyText = rawText.split("본문:")[1].trim();
+                } else if (rawText.includes("댓글:")) {
+                    titleText = `(댓글)`;
+                    bodyText = rawText.split("댓글:")[1].trim();
+                }
+                
+                resultTitle.textContent = titleText;
+                resultBody.innerText = bodyText;
+                copyBtn.disabled = false;
+                
+                saveToHistory({ title: titleText, body: bodyText });
+                
+                return;
 
-        } catch (error) {
-            console.error("Content generation error:", error);
-            displayError(`오류가 발생했습니다: ${error.message}`);
-        } finally {
-            allButtons.forEach(b => b.disabled = false);
-            outputLoading.classList.add('hidden');
+            } catch (error) {
+                console.error(`Attempt ${attempt + 1} failed:`, error);
+                attempt++;
+
+                if (attempt < maxRetries) {
+                    displayError(`요청이 불안정하여 재시도 중입니다... (${attempt}/${maxRetries})`);
+                    const delay = Math.pow(2, attempt) * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                } else {
+                    console.error("Content generation failed after multiple retries:", error);
+                    displayError(`오류가 반복해서 발생했습니다. 잠시 후 다시 시도해주세요: ${error.message}`);
+                }
+            }
         }
+        
+        allButtons.forEach(b => b.disabled = false);
+        outputLoading.classList.add('hidden');
     }
     
     function displayError(message) {
-         resultTitle.textContent = "오류";
+         outputLoading.classList.add('hidden');
+         outputResult.classList.remove('hidden');
+         resultTitle.textContent = "알림";
          resultPersonaIcon.textContent = "⚠️";
          resultPersonaName.textContent = "시스템";
-         resultPersonaName.className = `font-semibold text-red-400`;
+         resultPersonaName.className = `font-semibold text-yellow-400`;
          resultBody.textContent = message;
-         outputResult.classList.remove('hidden');
     }
 
     function saveToHistory(content) {
@@ -533,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function rewrite(type) {
         const originalBody = resultBody.innerText;
         if (!originalBody) return;
-
+        
         try {
             const persona = resultPersonaName.textContent;
             const title = resultTitle.textContent;
@@ -548,42 +625,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: prompt }] }],
                     systemInstruction: { parts: [{ text: `당신은 '${persona}' 페르소나의 말투와 톤을 유지합니다. 다른 부연설명 없이, 오직 결과물인 1개의 문장만 생성해주세요.` }] },
-                    generationConfig: { temperature: 0.9 }
+                    generationConfig: { temperature: 0.9, stopSequences: ["\n"] }
                 })
             });
 
             if (!response.ok) throw new Error('Rewrite API 요청 실패');
             
-            const data = await response.json();
-            const newText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            const { value } = await reader.read();
+            let newText = decoder.decode(value);
+
+            if (newText.startsWith('data: ')) {
+                 const jsonString = newText.substring(6, newText.lastIndexOf('}') + 1);
+                 const json = JSON.parse(jsonString);
+                 newText = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+            }
 
             if (!newText) throw new Error('새로운 문장을 생성하지 못했습니다.');
 
             let newBody = "";
             if (type === 'hook') {
-                const parts = originalBody.split('\n');
-                parts[0] = newText;
-                newBody = parts.join('\n');
+                const lines = originalBody.split('\n');
+                lines[0] = newText;
+                newBody = lines.join('\n');
             } else {
-                const sentences = originalBody.split(/([.!?\n]+)/);
-                if (sentences.length <= 1) {
-                    newBody = newText;
-                } else {
-                    let longestIndex = -1;
-                    let maxLength = 0;
-                    sentences.forEach((s, i) => {
-                        if (s.length > maxLength) {
-                            maxLength = s.length;
-                            longestIndex = i;
-                        }
-                    });
-                    if (longestIndex !== -1) {
-                        sentences[longestIndex] = newText;
-                    }
-                    newBody = sentences.join('');
-                }
+                 newBody = originalBody.replace(/[^.!?\n]+[.!?\n]?/, newText);
             }
-            resultBody.innerText = newText; // Since typeWriter is removed, just set the text
+            resultBody.innerText = newBody;
 
         } catch (e) {
             alert(e.message || '문장 교체 중 오류가 발생했습니다.');
