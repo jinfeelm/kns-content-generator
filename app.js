@@ -1,4 +1,4 @@
-// KNS 카페 콘텐츠 생성기 v4.2 - Help Modal
+// KNS 카페 콘텐츠 생성기 v4.3 - Streaming Update
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.validateApiKey !== 'function') {
       window.validateApiKey = function() { return true; };
@@ -41,13 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const referencePostInput = document.getElementById('referencePost');
     const historyBtn = document.getElementById('historyBtn');
     const statsBtn = document.getElementById('statsBtn');
-    const helpBtn = document.getElementById('helpBtn'); // 도움말 버튼
+    const helpBtn = document.getElementById('helpBtn');
     const historyModal = document.getElementById('historyModal');
     const statsModal = document.getElementById('statsModal');
-    const helpModal = document.getElementById('helpModal'); // 도움말 모달
+    const helpModal = document.getElementById('helpModal');
     const closeHistoryBtn = document.getElementById('closeHistoryBtn');
     const closeStatsBtn = document.getElementById('closeStatsBtn');
-    const closeHelpBtn = document.getElementById('closeHelpBtn'); // 도움말 닫기 버튼
+    const closeHelpBtn = document.getElementById('closeHelpBtn');
     const historyList = document.getElementById('historyList');
     const ocrUploadBtn = document.getElementById('ocrUploadBtn');
     const ocrImageUpload = document.getElementById('ocrImageUpload');
@@ -290,7 +290,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedPersona = personaSelect.value;
         const selectedCategory = categorySelect.value;
         const selectedPostType = postTypeSelect.value;
-        
+        const personaInfo = personaDetails[selectedPersona];
+
         const coreDescription = personaDetails[selectedPersona].description;
 
         const randomModifier = {
@@ -343,23 +344,76 @@ document.addEventListener('DOMContentLoaded', () => {
                     generationConfig: { temperature: 1.1, topP: 0.95, topK: 40 }
                 })
             });
-            if (!response.ok) throw new Error(`API 요청 실패: ${response.status}`);
-            const result = await response.json();
-            const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (rawText) {
-                let titleText = "생성된 콘텐츠", bodyText = rawText;
-                if (rawText.includes("제목:") && rawText.includes("본문:")) {
-                    titleText = rawText.split("제목:")[1].split("본문:")[0].trim();
-                    bodyText = rawText.split("본문:")[1].trim();
-                } else if (rawText.includes("댓글:")) {
-                    titleText = `(댓글)`;
-                    bodyText = rawText.split("댓글:")[1].trim();
-                }
-                displayResult(selectedPersona, titleText, bodyText);
-                saveToHistory({ title: titleText, body: bodyText });
-            } else {
-                displayError("AI로부터 유효한 응답을 받지 못했습니다.");
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`API 요청 실패: ${response.status} ${errorText}`);
             }
+
+            // --- ⬇️ 스트리밍 처리 로직으로 변경 ⬇️ ---
+            outputLoading.classList.add('hidden');
+            outputResult.classList.remove('hidden');
+            
+            resultTitle.textContent = "콘텐츠 생성 중...";
+            resultPersonaIcon.textContent = personaInfo.icon;
+            resultPersonaName.textContent = selectedPersona;
+            resultPersonaName.className = `font-semibold ${personaInfo.color}`;
+            resultBody.innerHTML = '';
+            
+            const cursor = document.createElement('span');
+            cursor.className = 'blinking-cursor';
+            resultBody.appendChild(cursor);
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                
+                // Gemini SSE 스트림은 "data: "로 시작하는 JSON 객체들을 포함합니다.
+                const parts = buffer.split('\n\n');
+                buffer = parts.pop() || ''; // 마지막 불완전한 부분은 버퍼에 남김
+                
+                for(const part of parts) {
+                    if (part.startsWith('data: ')) {
+                        try {
+                             const jsonString = part.substring(6); // "data: " 제거
+                             const json = JSON.parse(jsonString);
+                             const textChunk = json.candidates?.[0]?.content?.parts?.[0]?.text;
+                             if (textChunk) {
+                                resultBody.insertBefore(document.createTextNode(textChunk), cursor);
+                             }
+                        } catch(e) {
+                             console.warn("JSON 파싱 오류:", part);
+                        }
+                    }
+                }
+            }
+
+            cursor.remove(); // 스트리밍 완료 후 커서 제거
+            
+            // 스트리밍 완료 후 제목/본문 분리 및 저장
+            const rawText = resultBody.innerText;
+            let titleText = "생성된 콘텐츠", bodyText = rawText;
+            
+            if (rawText.includes("제목:") && rawText.includes("본문:")) {
+                titleText = rawText.split("제목:")[1].split("본문:")[0].trim();
+                bodyText = rawText.split("본문:")[1].trim();
+            } else if (rawText.includes("댓글:")) {
+                titleText = `(댓글)`;
+                bodyText = rawText.split("댓글:")[1].trim();
+            }
+            
+            resultTitle.textContent = titleText;
+            resultBody.innerText = bodyText; // 최종 정리된 텍스트로 교체
+            copyBtn.disabled = false;
+            
+            saveToHistory({ title: titleText, body: bodyText });
+
         } catch (error) {
             console.error("Content generation error:", error);
             displayError(`오류가 발생했습니다: ${error.message}`);
@@ -369,40 +423,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    function typeWriter(element, text, callback) {
-        let i = 0;
-        element.innerHTML = '';
-        const cursor = document.createElement('span');
-        cursor.className = 'blinking-cursor';
-        element.appendChild(cursor);
-    
-        function type() {
-            if (i < text.length) {
-                element.insertBefore(document.createTextNode(text.charAt(i)), cursor);
-                i++;
-                setTimeout(type, 15);
-            } else {
-                cursor.remove();
-                if (callback) callback();
-            }
-        }
-        type();
-    }
-
-    function displayResult(persona, title, body) {
-        const personaInfo = personaDetails[persona];
-        resultTitle.textContent = title;
-        resultPersonaIcon.textContent = personaInfo.icon;
-        resultPersonaName.textContent = persona;
-        resultPersonaName.className = `font-semibold ${personaInfo.color}`;
-        
-        typeWriter(resultBody, body, () => {
-            copyBtn.disabled = false;
-        });
-        
-        outputResult.classList.remove('hidden');
-    }
-
     function displayError(message) {
          resultTitle.textContent = "오류";
          resultPersonaIcon.textContent = "⚠️";
@@ -411,7 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
          resultBody.textContent = message;
          outputResult.classList.remove('hidden');
     }
-    
+
     function saveToHistory(content) {
         const historyItem = { id: Date.now(), timestamp: new Date().toLocaleString('ko-KR'), mode: currentMode, persona: personaSelect.value, category: categorySelect.value, title: content.title, body: content.body, author: userNameInput.value.trim() };
         contentHistory.unshift(historyItem);
@@ -563,7 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     newBody = sentences.join('');
                 }
             }
-            typeWriter(resultBody, newBody);
+            resultBody.innerText = newText; // Since typeWriter is removed, just set the text
 
         } catch (e) {
             alert(e.message || '문장 교체 중 오류가 발생했습니다.');
@@ -571,7 +591,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function init() {
-        // --- 자동 닉네임 설정 로직 ---
         let currentName = localStorage.getItem('knsContentGeneratorUserName');
         if (!currentName) {
             currentName = generateRandomName();
@@ -596,7 +615,6 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('knsContentGeneratorUserName', newName);
         });
         
-        // --- OCR 관련 이벤트 핸들러 ---
         ocrUploadBtn.addEventListener('click', () => ocrImageUpload.click());
         ocrImageUpload.addEventListener('change', (event) => {
             const file = event.target.files[0];
@@ -669,7 +687,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
         
-        // --- 모달 이벤트 리스너 ---
         historyBtn.addEventListener('click', () => { loadHistory(); historyModal.classList.remove('hidden'); });
         statsBtn.addEventListener('click', () => { loadStatistics(); statsModal.classList.remove('hidden'); });
         helpBtn.addEventListener('click', () => { helpModal.classList.remove('hidden'); });
